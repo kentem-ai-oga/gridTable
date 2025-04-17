@@ -1,21 +1,31 @@
 "use client";
 
-import { ComponentProps, useRef, useState } from "react";
+import {
+  ComponentProps,
+  forwardRef,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 
 type Props = Pick<
   ComponentProps<"input">,
   "className" | "type" | "value" | "onChange"
 >;
 
-export default function InputCell({
-  type = "text",
-  className,
-  value,
-  onChange,
-}: Props) {
+export default forwardRef(function InputCell(
+  { type = "text", className, value, onChange }: Props,
+  ref,
+) {
   const [mode, setMode] = useState<"selected" | "editing">("selected");
   const inputRef1 = useRef<HTMLInputElement>(null);
   const inputRef2 = useRef<HTMLInputElement>(null);
+
+  useImperativeHandle(ref, () => ({
+    focus: () => {
+      inputRef1.current?.focus();
+    },
+  }));
 
   return mode === "selected" ? (
     <input
@@ -56,4 +66,4 @@ export default function InputCell({
       }}
     />
   );
-}
+});
