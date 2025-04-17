@@ -13,8 +13,8 @@ type Props = Pick<
   "className" | "type" | "value" | "onChange"
 >;
 
-export default forwardRef(function InputCell(
-  { type = "text", className, value, onChange }: Props,
+export default forwardRef<{ focus: () => void }, Props>(function InputCell(
+  { type = "text", className, value, onChange },
   ref,
 ) {
   const [mode, setMode] = useState<"selected" | "editing">("selected");
