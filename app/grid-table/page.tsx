@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode, useReducer } from "react";
+import InputCell from "./_components/input-cell";
 
 type Person = {
   id: number;
@@ -58,9 +59,9 @@ const columns: {
     cell: ({ value, callbackFn }) => {
       if (typeof value !== "number") return null;
       return (
-        <input
+        <InputCell
           className="h-full"
-          type="text"
+          type="number"
           value={value}
           onChange={(e) => callbackFn?.(Number(e.target.value))}
         />
@@ -73,7 +74,7 @@ const columns: {
     cell: ({ value, callbackFn }) => {
       if (typeof value !== "string") return null;
       return (
-        <input
+        <InputCell
           className="h-full"
           type="text"
           value={value}
@@ -88,7 +89,7 @@ const columns: {
     cell: ({ value, callbackFn }) => {
       if (typeof value !== "number") return null;
       return (
-        <input
+        <InputCell
           className="h-full"
           type="number"
           value={value}
@@ -103,7 +104,7 @@ const columns: {
     cell: ({ value, callbackFn }) => {
       if (typeof value !== "string") return null;
       return (
-        <input
+        <InputCell
           className="h-full"
           type="email"
           value={value}
@@ -130,7 +131,7 @@ const columns: {
 
       return (
         <div className="grid grid-cols-[1fr_1px_1fr] grid-rows-[1fr_1px_1fr] place-items-center">
-          <input
+          <InputCell
             className="row-start-1 col-start-1 p-1 h-full"
             type="number"
             value={systolic}
@@ -142,7 +143,7 @@ const columns: {
             }
           />
           <div className="row-start-2 col-start-1 border-b border-gray-300 w-full h-full" />
-          <input
+          <InputCell
             className="row-start-3 col-start-1 p-1 h-full"
             type="number"
             value={diastolic}
@@ -154,7 +155,7 @@ const columns: {
             }
           />
           <div className="row-start-1 row-span-3 col-start-2 border-r border-gray-300 w-full h-full" />
-          <input
+          <InputCell
             className="row-start-1 row-span-3 col-start-3 p-1 h-full"
             type="number"
             value={average}
