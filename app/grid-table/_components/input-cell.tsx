@@ -54,6 +54,7 @@ export default forwardRef<{ focus: () => void }, Props>(function InputCell(
       }}
       onDoubleClick={() => setMode("editing")}
       onKeyDown={(e) => {
+        if (e.key === "Delete" && isJustFocused) onChange?.("");
         if (/^[a-zA-Z0-9]$/.test(e.key)) {
           if (isJustFocused) {
             setIsJustFocused(false);
