@@ -8,10 +8,9 @@ import {
   useState,
 } from "react";
 
-type Props = Pick<
-  ComponentProps<"input">,
-  "className" | "type" | "value" | "onChange" | "onFocus"
-> & {
+type Props = Pick<ComponentProps<"input">, "className" | "type" | "value"> & {
+  onChange?: (newValue: string | number) => void;
+  onFocus?: () => void;
   onKeyDownUp?: () => void;
   onKeyDownDown?: () => void;
   onKeyDownLeft?: () => void;
@@ -33,31 +32,35 @@ export default forwardRef<{ focus: () => void }, Props>(function InputCell(
   ref,
 ) {
   const [mode, setMode] = useState<"selected" | "editing">("selected");
-  const inputRef1 = useRef<HTMLInputElement>(null);
-  const inputRef2 = useRef<HTMLInputElement>(null);
+  const divRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const [isJustFocused, setIsJustFocused] = useState(false);
 
   useImperativeHandle(ref, () => ({
     focus: () => {
-      inputRef1.current?.focus();
+      divRef.current?.focus();
     },
   }));
 
   return mode === "selected" ? (
-    <input
-      ref={inputRef1}
+    <div
+      ref={divRef}
+      tabIndex={0}
       className={`${className} focus:outline-2 focus-visible:outline-2 focus:outline-blue-300`}
-      type="text"
-      value={value}
-      onChange={onChange}
-      onFocus={(e) => {
-        onFocus?.(e);
-        inputRef1.current?.setSelectionRange(
-          String(value).length,
-          String(value).length,
-        );
+      onFocus={() => {
+        setIsJustFocused(true);
+        onFocus?.();
       }}
       onDoubleClick={() => setMode("editing")}
       onKeyDown={(e) => {
+        if (/^[a-zA-Z0-9]$/.test(e.key)) {
+          if (isJustFocused) {
+            setIsJustFocused(false);
+            onChange?.(e.key);
+          } else onChange?.(value + e.key);
+        }
+
         switch (e.key) {
           case "ArrowUp":
             e.preventDefault();
@@ -88,14 +91,16 @@ export default forwardRef<{ focus: () => void }, Props>(function InputCell(
             break;
         }
       }}
-    />
+    >
+      {value}
+    </div>
   ) : (
     <input
-      ref={inputRef2}
+      ref={inputRef}
       className={`${className} focus:outline-2 focus-visible:outline-2`}
       type={type}
       value={value}
-      onChange={onChange}
+      onChange={(e) => onChange?.(e.target.value)}
       onFocus={onFocus}
       onBlur={() => setMode("selected")}
       onKeyDown={(e) => {

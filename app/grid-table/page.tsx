@@ -75,7 +75,7 @@ const columns: {
           className="h-full"
           type="number"
           value={value}
-          onChange={(e) => callbackFn?.(Number(e.target.value))}
+          onChange={(newValue) => callbackFn?.(Number(newValue))}
           onFocus={onFocus}
           ref={(ref) => {
             if (!ref) return;
@@ -99,7 +99,7 @@ const columns: {
           className="h-full"
           type="text"
           value={value}
-          onChange={(e) => callbackFn?.(e.target.value)}
+          onChange={(newValue) => callbackFn?.(newValue)}
           onFocus={onFocus}
           ref={(ref) => {
             if (!ref) return;
@@ -123,7 +123,7 @@ const columns: {
           className="h-full"
           type="number"
           value={value}
-          onChange={(e) => callbackFn?.(Number(e.target.value))}
+          onChange={(newValue) => callbackFn?.(Number(newValue))}
           onFocus={onFocus}
           ref={(ref) => {
             if (!ref) return;
@@ -147,7 +147,7 @@ const columns: {
           className="h-full"
           type="email"
           value={value}
-          onChange={(e) => callbackFn?.(e.target.value)}
+          onChange={(newValue) => callbackFn?.(newValue)}
           onFocus={onFocus}
           ref={(ref) => {
             if (!ref) return;
@@ -185,10 +185,10 @@ const columns: {
             className="row-start-1 col-start-1 p-1 h-full"
             type="number"
             value={systolic}
-            onChange={(e) =>
+            onChange={(newValue) =>
               callbackFn?.({
                 ...valueAsUnknown,
-                systolic: Number(e.target.value),
+                systolic: Number(newValue),
               })
             }
             ref={(ref) => {
@@ -202,10 +202,10 @@ const columns: {
             className="row-start-3 col-start-1 p-1 h-full"
             type="number"
             value={diastolic}
-            onChange={(e) =>
+            onChange={(newValue) =>
               callbackFn?.({
                 ...valueAsUnknown,
-                diastolic: Number(e.target.value),
+                diastolic: Number(newValue),
               })
             }
             ref={(ref) => {
@@ -219,10 +219,10 @@ const columns: {
             className="row-start-1 row-span-3 col-start-3 p-1 h-full"
             type="number"
             value={average}
-            onChange={(e) =>
+            onChange={(newValue) =>
               callbackFn?.({
                 ...valueAsUnknown,
-                average: Number(e.target.value),
+                average: Number(newValue),
               })
             }
             ref={(ref) => {
@@ -406,7 +406,7 @@ export default function GridTablePage() {
               {columns.map((column) => (
                 <td
                   key={column.accessorKey}
-                  className="border border-gray-300 h-full"
+                  className="border border-gray-300 h-full w-50"
                 >
                   {column.cell({
                     rowIndex,
