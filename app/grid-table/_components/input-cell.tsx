@@ -49,20 +49,30 @@ export default forwardRef<{ focus: () => void }, Props>(function InputCell(
       type="text"
       value={value}
       onChange={onChange}
-      onFocus={onFocus}
+      onFocus={(e) => {
+        onFocus?.(e);
+        inputRef1.current?.setSelectionRange(
+          String(value).length,
+          String(value).length,
+        );
+      }}
       onDoubleClick={() => setMode("editing")}
       onKeyDown={(e) => {
         switch (e.key) {
           case "ArrowUp":
+            e.preventDefault();
             onKeyDownUp?.();
             break;
           case "ArrowDown":
+            e.preventDefault();
             onKeyDownDown?.();
             break;
           case "ArrowRight":
+            e.preventDefault();
             onKeyDownRight?.();
             break;
           case "ArrowLeft":
+            e.preventDefault();
             onKeyDownLeft?.();
             break;
           case "Tab":
