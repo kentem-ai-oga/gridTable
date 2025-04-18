@@ -10,11 +10,26 @@ import {
 
 type Props = Pick<
   ComponentProps<"input">,
-  "className" | "type" | "value" | "onChange"
->;
+  "className" | "type" | "value" | "onChange" | "onFocus"
+> & {
+  onKeyDownUp?: () => void;
+  onKeyDownDown?: () => void;
+  onKeyDownLeft?: () => void;
+  onKeyDownRight?: () => void;
+};
 
 export default forwardRef<{ focus: () => void }, Props>(function InputCell(
-  { type = "text", className, value, onChange },
+  {
+    type = "text",
+    className,
+    value,
+    onChange,
+    onFocus,
+    onKeyDownUp,
+    onKeyDownDown,
+    onKeyDownLeft,
+    onKeyDownRight,
+  },
   ref,
 ) {
   const [mode, setMode] = useState<"selected" | "editing">("selected");
@@ -34,13 +49,22 @@ export default forwardRef<{ focus: () => void }, Props>(function InputCell(
       type="text"
       value={value}
       onChange={onChange}
+      onFocus={onFocus}
       onDoubleClick={() => setMode("editing")}
       onKeyDown={(e) => {
         switch (e.key) {
-          case "ArrowRight":
-          case "ArrowLeft":
           case "ArrowUp":
+            onKeyDownUp?.();
+            break;
           case "ArrowDown":
+            onKeyDownDown?.();
+            break;
+          case "ArrowRight":
+            onKeyDownRight?.();
+            break;
+          case "ArrowLeft":
+            onKeyDownLeft?.();
+            break;
           case "Tab":
             e.preventDefault();
             break;
@@ -54,6 +78,7 @@ export default forwardRef<{ focus: () => void }, Props>(function InputCell(
       type={type}
       value={value}
       onChange={onChange}
+      onFocus={onFocus}
       onKeyDown={(e) => {
         switch (e.key) {
           case "Enter":
