@@ -47,7 +47,7 @@ export default forwardRef<{ focus: () => void }, Props>(function InputCell(
     <div
       ref={divRef}
       tabIndex={0}
-      className={`${className} focus:outline-2 focus-visible:outline-2 focus:outline-blue-300`}
+      className={`${className} flex items-center focus:outline-2 focus-visible:outline-2 focus:outline-blue-300`}
       onFocus={() => {
         setIsJustFocused(true);
         onFocus?.();
