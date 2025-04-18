@@ -406,7 +406,7 @@ export default function GridTablePage() {
               {columns.map((column) => (
                 <td
                   key={column.accessorKey}
-                  className="border border-gray-300 h-full w-50"
+                  className="border border-gray-300 h-full"
                 >
                   {column.cell({
                     rowIndex,

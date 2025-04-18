@@ -33,8 +33,8 @@ export default forwardRef<{ focus: () => void }, Props>(function InputCell(
   ref,
 ) {
   const [mode, setMode] = useState<"selected" | "editing">("selected");
-  const divRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef1 = useRef<HTMLInputElement>(null);
+  const inputRef2 = useRef<HTMLInputElement>(null);
 
   const [isJustFocused, setIsJustFocused] = useState(false);
   const [forUndo, setForUndo] = useState<{
@@ -44,15 +44,22 @@ export default forwardRef<{ focus: () => void }, Props>(function InputCell(
 
   useImperativeHandle(ref, () => ({
     focus: () => {
-      divRef.current?.focus();
+      inputRef1.current?.focus();
     },
   }));
 
   return mode === "selected" ? (
-    <div
-      ref={divRef}
-      tabIndex={0}
-      className={`${className} flex items-center focus:outline-2 focus-visible:outline-2 focus:outline-blue-300`}
+    <input
+      ref={inputRef1}
+      className={`${className} focus:outline-2 focus-visible:outline-2 focus:outline-blue-300 caret-transparent`}
+      value={value}
+      onChange={(e) => {
+        if (isJustFocused) {
+          setIsJustFocused(false);
+          setForUndo({ value, isJustFocused });
+          onChange?.(e.target.value.slice(String(value).length));
+        } else onChange?.(e.target.value);
+      }}
       onFocus={() => {
         setIsJustFocused(true);
         onFocus?.();
@@ -102,8 +109,6 @@ export default forwardRef<{ focus: () => void }, Props>(function InputCell(
               e.preventDefault();
               setForUndo({ value, isJustFocused });
               onChange?.("");
-            } else {
-              onChange?.(String(value).slice(0, -1));
             }
             break;
         }
@@ -119,21 +124,11 @@ export default forwardRef<{ focus: () => void }, Props>(function InputCell(
           });
           return;
         }
-
-        if (/^[a-zA-Z0-9]$/.test(e.key)) {
-          if (isJustFocused) {
-            setIsJustFocused(false);
-            setForUndo({ value, isJustFocused });
-            onChange?.(e.key);
-          } else onChange?.(value + e.key);
-        }
       }}
-    >
-      {value}
-    </div>
+    />
   ) : (
     <input
-      ref={inputRef}
+      ref={inputRef2}
       className={`${className} focus:outline-2 focus-visible:outline-2`}
       type={type}
       value={value}
