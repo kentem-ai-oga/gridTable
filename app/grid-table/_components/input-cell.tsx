@@ -75,8 +75,16 @@ export default forwardRef<{ focus: () => void }, Props>(function InputCell(
             e.preventDefault();
             onKeyDownLeft?.();
             break;
+          case "Enter": {
+            e.preventDefault();
+            if (e.shiftKey) onKeyDownUp?.();
+            else onKeyDownDown?.();
+            break;
+          }
           case "Tab":
             e.preventDefault();
+            if (e.shiftKey) onKeyDownLeft?.();
+            else onKeyDownRight?.();
             break;
         }
       }}
@@ -92,9 +100,18 @@ export default forwardRef<{ focus: () => void }, Props>(function InputCell(
       onBlur={() => setMode("selected")}
       onKeyDown={(e) => {
         switch (e.key) {
-          case "Enter":
-          case "Escape":
+          case "Enter": {
+            e.preventDefault();
+            if (e.shiftKey) onKeyDownUp?.();
+            else onKeyDownDown?.();
+            break;
+          }
           case "Tab":
+            e.preventDefault();
+            if (e.shiftKey) onKeyDownLeft?.();
+            else onKeyDownRight?.();
+            break;
+          case "Escape":
             e.preventDefault();
             setMode("selected");
             break;
