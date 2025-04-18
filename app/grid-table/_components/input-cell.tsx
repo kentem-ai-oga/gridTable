@@ -8,7 +8,8 @@ import {
   useState,
 } from "react";
 
-type Props = Pick<ComponentProps<"input">, "className" | "type" | "value"> & {
+type Props = Pick<ComponentProps<"input">, "className" | "type"> & {
+  value?: string | number;
   onChange?: (newValue: string | number) => void;
   onFocus?: () => void;
   onKeyDownUp?: () => void;
@@ -36,6 +37,10 @@ export default forwardRef<{ focus: () => void }, Props>(function InputCell(
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [isJustFocused, setIsJustFocused] = useState(false);
+  const [forUndo, setForUndo] = useState<{
+    value?: string | number;
+    isJustFocused: boolean;
+  }>();
 
   useImperativeHandle(ref, () => ({
     focus: () => {
@@ -52,15 +57,11 @@ export default forwardRef<{ focus: () => void }, Props>(function InputCell(
         setIsJustFocused(true);
         onFocus?.();
       }}
+      onBlur={() => {
+        setForUndo(undefined);
+      }}
       onDoubleClick={() => setMode("editing")}
       onKeyDown={(e) => {
-        if (/^[a-zA-Z0-9]$/.test(e.key)) {
-          if (isJustFocused) {
-            setIsJustFocused(false);
-            onChange?.(e.key);
-          } else onChange?.(value + e.key);
-        }
-
         switch (e.key) {
           case "ArrowUp":
             e.preventDefault();
@@ -90,12 +91,41 @@ export default forwardRef<{ focus: () => void }, Props>(function InputCell(
             else onKeyDownRight?.();
             break;
           case "Delete":
-          case "Backspace":
             if (isJustFocused) {
               e.preventDefault();
+              setForUndo({ value, isJustFocused });
               onChange?.("");
             }
             break;
+          case "Backspace":
+            if (isJustFocused) {
+              e.preventDefault();
+              setForUndo({ value, isJustFocused });
+              onChange?.("");
+            } else {
+              onChange?.(String(value).slice(0, -1));
+            }
+            break;
+        }
+
+        if (e.key === "z" && (e.ctrlKey || e.metaKey)) {
+          if (forUndo?.value === undefined) return;
+          e.preventDefault();
+          onChange?.(forUndo.value);
+          setIsJustFocused(forUndo.isJustFocused);
+          setForUndo({
+            value,
+            isJustFocused,
+          });
+          return;
+        }
+
+        if (/^[a-zA-Z0-9]$/.test(e.key)) {
+          if (isJustFocused) {
+            setIsJustFocused(false);
+            setForUndo({ value, isJustFocused });
+            onChange?.(e.key);
+          } else onChange?.(value + e.key);
         }
       }}
     >
@@ -109,7 +139,10 @@ export default forwardRef<{ focus: () => void }, Props>(function InputCell(
       value={value}
       onChange={(e) => onChange?.(e.target.value)}
       onFocus={onFocus}
-      onBlur={() => setMode("selected")}
+      onBlur={() => {
+        setMode("selected");
+        setForUndo(undefined);
+      }}
       onKeyDown={(e) => {
         switch (e.key) {
           case "Enter": {
