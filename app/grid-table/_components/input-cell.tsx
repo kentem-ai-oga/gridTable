@@ -79,6 +79,7 @@ export default forwardRef<{ focus: () => void }, Props>(function InputCell(
       value={value}
       onChange={onChange}
       onFocus={onFocus}
+      onBlur={() => setMode("selected")}
       onKeyDown={(e) => {
         switch (e.key) {
           case "Enter":
