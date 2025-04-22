@@ -57,8 +57,13 @@ export default forwardRef<{ focus: () => void }, Props>(function InputCell(
         if (isJustFocused) {
           setIsJustFocused(false);
           setForUndo({ value, isJustFocused });
-          onChange?.(e.target.value.slice(String(value).length));
+          onChange?.(e.target.value.slice(-1));
         } else onChange?.(e.target.value);
+      }}
+      onSelect={() => {
+        if (!inputRef1.current) return;
+        const length = inputRef1.current.value.length;
+        inputRef1.current.setSelectionRange(length, length);
       }}
       onFocus={() => {
         setIsJustFocused(true);
