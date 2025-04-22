@@ -1,9 +1,11 @@
+// GridTable使用イメージの画面
+
 "use client";
 
 import { ReactNode, useReducer } from "react";
 import GridTable, { CELL_WITHOUT_SUBCELL } from "./_components/grid-table";
-import InputCell from "./_components/input-cell";
-import { Cell } from "./_components/useFocus";
+import InputCell from "./_components/grid-table/input-cell";
+import { Cell } from "./_components/grid-table/useFocus";
 
 type Person = {
   id: number;
@@ -83,6 +85,7 @@ const columns: {
       if (typeof value !== "number") return null;
       return (
         <InputCell
+          // refCallbackを使うことで、レンダリングされた直後に一度だけこのセルにフォーカスするための関数を取得する
           ref={(ref) => {
             if (!ref) return;
             onInitialize?.([
@@ -258,6 +261,7 @@ const columns: {
       if (!isBloodPressure(valueAsUnknown)) return null;
       const { systolic, diastolic, average } = valueAsUnknown;
 
+      // セル内でサブセルを分けるために、分割している
       const subCells: [Cell, Cell, Cell] = [
         {
           topRow: 0,

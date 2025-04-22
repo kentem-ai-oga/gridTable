@@ -1,9 +1,15 @@
+// GridTable全体のフォーカスを制御するためのカスタムフック
+
 import { useRef } from "react";
 
 export type Cell = {
+  /** セルの上端行 */
   topRow: number;
+  /** セルの左端列 */
   leftColumn: number;
+  /** セルの下端行 */
   bottomRow: number;
+  /** セルの右端列 */
   rightColumn: number;
   focus: () => void;
 };
@@ -14,16 +20,6 @@ export default function useFocus() {
 
   const addCell = (cell: Cell) => {
     cellsRef.current.push(cell);
-  };
-
-  const removeCell = (cell: Cell) => {
-    cellsRef.current = cellsRef.current.filter(
-      (c) =>
-        c.topRow !== cell.topRow ||
-        c.leftColumn !== cell.leftColumn ||
-        c.bottomRow !== cell.bottomRow ||
-        c.rightColumn !== cell.rightColumn,
-    );
   };
 
   const focusCell = (cellToFocus: Omit<Cell, "focus">) => {
@@ -109,7 +105,6 @@ export default function useFocus() {
 
   return {
     addCell,
-    removeCell,
     focusCell,
     moveUp,
     moveDown,

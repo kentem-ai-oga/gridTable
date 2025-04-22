@@ -1,3 +1,5 @@
+// GridTableで最も一般的に使われる入力セル
+
 "use client";
 
 import {
@@ -32,25 +34,34 @@ export default forwardRef<{ focus: () => void }, Props>(function InputCell(
   },
   ref,
 ) {
+  // Excelのセルをクリックしたときの状態がselected、ダブルクリックしたときの状態がediting
   const [mode, setMode] = useState<"selected" | "editing">("selected");
-  const inputRef1 = useRef<HTMLInputElement>(null);
-  const inputRef2 = useRef<HTMLInputElement>(null);
 
+  // selected状態用のinputのref
+  const selectedInputRef = useRef<HTMLInputElement>(null);
+
+  // editing状態用のinputのref
+  const editingInputRef = useRef<HTMLInputElement>(null);
+
+  // セルが選択された直後は文字入力されると元の文字が消えるため、その制御に利用
   const [isJustFocused, setIsJustFocused] = useState(false);
   const [forUndo, setForUndo] = useState<{
     value?: string | number;
     isJustFocused: boolean;
   }>();
 
+  // このコンポーネントからfocusだけをrefとして外に出すためのもの
+  // https://ja.react.dev/reference/react/useImperativeHandle
   useImperativeHandle(ref, () => ({
     focus: () => {
-      inputRef1.current?.focus();
+      selectedInputRef.current?.focus();
     },
   }));
 
   return mode === "selected" ? (
     <input
-      ref={inputRef1}
+      ref={selectedInputRef}
+      // Excelに寄せるため、キャレット(カーソル)を透明にしている
       className={`${className} focus:outline-2 focus-visible:outline-2 focus:outline-blue-300 caret-transparent`}
       value={value}
       onChange={(e) => {
@@ -60,10 +71,11 @@ export default forwardRef<{ focus: () => void }, Props>(function InputCell(
           onChange?.(e.target.value.slice(-1));
         } else onChange?.(e.target.value);
       }}
+      // セルのどこをクリックしてもフォーカスが必ず最後に当たるようにしている
       onSelect={() => {
-        if (!inputRef1.current) return;
-        const length = inputRef1.current.value.length;
-        inputRef1.current.setSelectionRange(length, length);
+        if (!selectedInputRef.current) return;
+        const length = selectedInputRef.current.value.length;
+        selectedInputRef.current.setSelectionRange(length, length);
       }}
       onFocus={() => {
         setIsJustFocused(true);
@@ -133,7 +145,7 @@ export default forwardRef<{ focus: () => void }, Props>(function InputCell(
     />
   ) : (
     <input
-      ref={inputRef2}
+      ref={editingInputRef}
       className={`${className} focus:outline-2 focus-visible:outline-2`}
       type={type}
       value={value}

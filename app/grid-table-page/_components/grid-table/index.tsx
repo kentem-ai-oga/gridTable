@@ -1,6 +1,9 @@
+// GridTable本体
+
 import { ReactNode } from "react";
 import useFocus, { Cell } from "./useFocus";
 
+// 1セルの中でセルが分割されないケースで使う
 export const CELL_WITHOUT_SUBCELL = {
   topRow: 0,
   leftColumn: 0,
