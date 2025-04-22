@@ -101,7 +101,14 @@ const columns: {
           className="h-full"
           type="number"
           value={value}
-          onChange={(newValue) => onChange?.(Number(newValue))}
+          onChange={(newValue) => {
+            const valueAsNumber = Number(newValue);
+            if (isNaN(valueAsNumber)) {
+              onChange?.(0);
+              return;
+            }
+            onChange?.(valueAsNumber);
+          }}
           onFocus={() => onFocus?.(CELL_WITHOUT_SUBCELL)}
           onKeyDownUp={onKeyDownUp}
           onKeyDownDown={onKeyDownDown}
@@ -177,7 +184,14 @@ const columns: {
           className="h-full"
           type="number"
           value={value}
-          onChange={(newValue) => onChange?.(Number(newValue))}
+          onChange={(newValue) => {
+            const valueAsNumber = Number(newValue);
+            if (isNaN(valueAsNumber)) {
+              onChange?.(0);
+              return;
+            }
+            onChange?.(valueAsNumber);
+          }}
           onFocus={() => onFocus?.(CELL_WITHOUT_SUBCELL)}
           onKeyDownUp={onKeyDownUp}
           onKeyDownDown={onKeyDownDown}
@@ -286,12 +300,20 @@ const columns: {
             className="row-start-1 col-start-1 p-1 h-full"
             type="number"
             value={systolic}
-            onChange={(newValue) =>
+            onChange={(newValue) => {
+              const valueAsNumber = Number(newValue);
+              if (isNaN(valueAsNumber)) {
+                onChange?.({
+                  ...valueAsUnknown,
+                  systolic: 0,
+                });
+                return;
+              }
               onChange?.({
                 ...valueAsUnknown,
-                systolic: Number(newValue),
-              })
-            }
+                systolic: valueAsNumber,
+              });
+            }}
             onFocus={() => onFocus?.(subCells[0])}
             onKeyDownUp={onKeyDownUp}
             onKeyDownDown={onKeyDownDown}
@@ -309,12 +331,20 @@ const columns: {
             className="row-start-3 col-start-1 p-1 h-full"
             type="number"
             value={diastolic}
-            onChange={(newValue) =>
+            onChange={(newValue) => {
+              const valueAsNumber = Number(newValue);
+              if (isNaN(valueAsNumber)) {
+                onChange?.({
+                  ...valueAsUnknown,
+                  diastolic: 0,
+                });
+                return;
+              }
               onChange?.({
                 ...valueAsUnknown,
-                diastolic: Number(newValue),
-              })
-            }
+                diastolic: valueAsNumber,
+              });
+            }}
             onFocus={() => onFocus?.(subCells[1])}
             onKeyDownUp={onKeyDownUp}
             onKeyDownDown={onKeyDownDown}
@@ -332,12 +362,20 @@ const columns: {
             className="row-start-1 row-span-3 col-start-3 p-1 h-full"
             type="number"
             value={average}
-            onChange={(newValue) =>
+            onChange={(newValue) => {
+              const valueAsNumber = Number(newValue);
+              if (isNaN(valueAsNumber)) {
+                onChange?.({
+                  ...valueAsUnknown,
+                  average: 0,
+                });
+                return;
+              }
               onChange?.({
                 ...valueAsUnknown,
-                average: Number(newValue),
-              })
-            }
+                average: valueAsNumber,
+              });
+            }}
             onFocus={() => onFocus?.(subCells[2])}
             onKeyDownUp={onKeyDownUp}
             onKeyDownDown={onKeyDownDown}
