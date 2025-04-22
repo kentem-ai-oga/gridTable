@@ -1,8 +1,9 @@
 "use client";
 
 import { ReactNode, useReducer } from "react";
+import GridTable, { CELL_WITHOUT_SUBCELL } from "./_components/grid-table";
 import InputCell from "./_components/input-cell";
-import useFocus, { Cell } from "./_components/useFocus";
+import { Cell } from "./_components/useFocus";
 
 type Person = {
   id: number;
@@ -33,20 +34,13 @@ const isBloodPressure = (value: unknown): value is Person["bloodPressure"] => {
   return true;
 };
 
-const CELL_WITHOUT_SUBCELL = {
-  topRow: 0,
-  leftColumn: 0,
-  bottomRow: 1,
-  rightColumn: 1,
-} as const satisfies Omit<Cell, "focus">;
-
 const columns: {
   accessorKey: keyof Person;
   header: ({
     columnAccessorKey,
     callbackFn,
   }: {
-    columnAccessorKey: string;
+    columnAccessorKey: keyof Person;
     callbackFn?: (value: unknown) => void;
   }) => ReactNode;
   cell: ({
@@ -62,7 +56,7 @@ const columns: {
     onKeyDownRight,
   }: {
     rowIndex: number;
-    columnAccessorKey: string;
+    columnAccessorKey: keyof Person;
     value: unknown;
     onChange?: (value: unknown) => void;
     onFocus?: (cell: Omit<Cell, "focus">) => void;
@@ -388,7 +382,7 @@ const columns: {
   },
 ];
 
-const initialData: Person[] = [
+const INITIAL_DATA = [
   {
     id: 1,
     name: "John Doe",
@@ -410,7 +404,7 @@ const initialData: Person[] = [
     email: "sam@example.com",
     bloodPressure: { systolic: 140, diastolic: 90, average: 115 },
   },
-];
+] as const satisfies Person[];
 
 type Action =
   | { type: "update"; rowIndex: number; accessorKey: "id"; value: Person["id"] }
@@ -440,9 +434,6 @@ type Action =
     };
 
 export default function GridTablePage() {
-  const { addCell, focusCell, moveUp, moveDown, moveLeft, moveRight } =
-    useFocus();
-
   const [formState, formDispatch] = useReducer(
     (state: Person[], action: Action) => {
       switch (action.type) {
@@ -460,155 +451,84 @@ export default function GridTablePage() {
           return state;
       }
     },
-    initialData,
+    INITIAL_DATA,
   );
 
-  const handleChange =
-    ({
-      columnAccessorKey,
-      rowIndex,
-    }: {
-      columnAccessorKey: string;
-      rowIndex: number;
-    }) =>
-    (value: unknown) => {
-      switch (columnAccessorKey) {
-        case "id": {
-          if (typeof value === "number") {
-            formDispatch({
-              type: "update",
-              rowIndex,
-              accessorKey: columnAccessorKey,
-              value,
-            });
-          }
-          break;
+  const handleChange = ({
+    columnAccessorKey,
+    rowIndex,
+    value,
+  }: {
+    columnAccessorKey: keyof Person;
+    rowIndex: number;
+    value: unknown;
+  }) => {
+    switch (columnAccessorKey) {
+      case "id": {
+        if (typeof value === "number") {
+          formDispatch({
+            type: "update",
+            rowIndex,
+            accessorKey: columnAccessorKey,
+            value,
+          });
         }
-        case "name": {
-          if (typeof value === "string") {
-            formDispatch({
-              type: "update",
-              rowIndex,
-              accessorKey: columnAccessorKey,
-              value,
-            });
-          }
-          break;
-        }
-        case "age": {
-          if (typeof value === "number") {
-            formDispatch({
-              type: "update",
-              rowIndex,
-              accessorKey: columnAccessorKey,
-              value,
-            });
-          }
-          break;
-        }
-        case "email": {
-          if (typeof value === "string") {
-            formDispatch({
-              type: "update",
-              rowIndex,
-              accessorKey: columnAccessorKey,
-              value,
-            });
-          }
-          break;
-        }
-        case "bloodPressure": {
-          if (isBloodPressure(value)) {
-            formDispatch({
-              type: "update",
-              rowIndex,
-              accessorKey: columnAccessorKey,
-              value,
-            });
-          }
-          break;
-        }
-        default:
-          break;
+        break;
       }
-    };
+      case "name": {
+        if (typeof value === "string") {
+          formDispatch({
+            type: "update",
+            rowIndex,
+            accessorKey: columnAccessorKey,
+            value,
+          });
+        }
+        break;
+      }
+      case "age": {
+        if (typeof value === "number") {
+          formDispatch({
+            type: "update",
+            rowIndex,
+            accessorKey: columnAccessorKey,
+            value,
+          });
+        }
+        break;
+      }
+      case "email": {
+        if (typeof value === "string") {
+          formDispatch({
+            type: "update",
+            rowIndex,
+            accessorKey: columnAccessorKey,
+            value,
+          });
+        }
+        break;
+      }
+      case "bloodPressure": {
+        if (isBloodPressure(value)) {
+          formDispatch({
+            type: "update",
+            rowIndex,
+            accessorKey: columnAccessorKey,
+            value,
+          });
+        }
+        break;
+      }
+      default:
+        break;
+    }
+  };
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-4">Grid Table</h1>
-      <table className="table-auto border-collapse border border-gray-300">
-        <thead className="bg-gray-200">
-          <tr className="border-b border-gray-300 h-full">
-            {columns.map((column) => (
-              <th
-                key={column.accessorKey}
-                className="border border-gray-300 h-full"
-              >
-                {column.header({
-                  columnAccessorKey: column.accessorKey,
-                })}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody className="bg-white">
-          {formState.map((row, rowIndex) => (
-            <tr key={rowIndex} className="border-b border-gray-300 h-full">
-              {columns.map((column) => (
-                <td
-                  key={column.accessorKey}
-                  className="border border-gray-300 h-full"
-                >
-                  {column.cell({
-                    rowIndex,
-                    columnAccessorKey: column.accessorKey,
-                    value: row[column.accessorKey],
-                    onChange: handleChange({
-                      columnAccessorKey: column.accessorKey,
-                      rowIndex,
-                    }),
-                    onFocus: (cell) => {
-                      focusCell({
-                        topRow: rowIndex + cell.topRow,
-                        leftColumn:
-                          columns.findIndex(
-                            (col) => col.accessorKey === column.accessorKey,
-                          ) + cell.leftColumn,
-                        bottomRow: rowIndex + cell.bottomRow,
-                        rightColumn:
-                          columns.findIndex(
-                            (col) => col.accessorKey === column.accessorKey,
-                          ) + cell.rightColumn,
-                      });
-                    },
-                    onKeyDownUp: moveUp,
-                    onKeyDownDown: moveDown,
-                    onKeyDownLeft: moveLeft,
-                    onKeyDownRight: moveRight,
-                    onInitialize: (subCells) => {
-                      subCells.forEach((subCell) => {
-                        addCell({
-                          topRow: rowIndex + subCell.topRow,
-                          leftColumn:
-                            columns.findIndex(
-                              (col) => col.accessorKey === column.accessorKey,
-                            ) + subCell.leftColumn,
-                          bottomRow: rowIndex + subCell.bottomRow,
-                          rightColumn:
-                            columns.findIndex(
-                              (col) => col.accessorKey === column.accessorKey,
-                            ) + subCell.rightColumn,
-                          focus: () => subCell.focus(),
-                        });
-                      });
-                    },
-                  })}
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <GridTable<Person>
+      columns={columns}
+      formState={formState}
+      onChange={handleChange}
+    />
   );
 }
