@@ -2,7 +2,7 @@
 
 import { ReactNode, useReducer } from "react";
 import InputCell from "./_components/input-cell";
-import useFocus from "./_components/useFocus";
+import useFocus, { Cell } from "./_components/useFocus";
 
 type Person = {
   id: number;
@@ -33,6 +33,13 @@ const isBloodPressure = (value: unknown): value is Person["bloodPressure"] => {
   return true;
 };
 
+const CELL_WITHOUT_SUBCELL = {
+  topRow: 0,
+  leftColumn: 0,
+  bottomRow: 1,
+  rightColumn: 1,
+} as const satisfies Omit<Cell, "focus">;
+
 const columns: {
   accessorKey: keyof Person;
   header: ({
@@ -46,45 +53,60 @@ const columns: {
     rowIndex,
     columnAccessorKey,
     value,
-    callbackFn,
-    setFocusList,
-    onKeyDown,
+    onChange,
     onFocus,
+    onInitialize,
+    onKeyDownUp,
+    onKeyDownDown,
+    onKeyDownLeft,
+    onKeyDownRight,
   }: {
     rowIndex: number;
     columnAccessorKey: string;
     value: unknown;
-    callbackFn?: (value: unknown) => void;
-    setFocusList?: (focuses: (() => void)[]) => void;
-    onKeyDown?: {
-      up?: () => void;
-      down?: () => void;
-      left?: () => void;
-      right?: () => void;
-    };
-    onFocus?: () => void;
+    onChange?: (value: unknown) => void;
+    onFocus?: (cell: Omit<Cell, "focus">) => void;
+    onInitialize?: (subCells: Cell[]) => void;
+    onKeyDownUp?: () => void;
+    onKeyDownDown?: () => void;
+    onKeyDownLeft?: () => void;
+    onKeyDownRight?: () => void;
   }) => ReactNode;
 }[] = [
   {
     accessorKey: "id",
     header: () => <span>ID</span>,
-    cell: ({ value, callbackFn, setFocusList, onKeyDown, onFocus }) => {
+    cell: ({
+      value,
+      onChange,
+      onFocus,
+      onKeyDownUp,
+      onKeyDownDown,
+      onKeyDownLeft,
+      onKeyDownRight,
+      onInitialize,
+    }) => {
       if (typeof value !== "number") return null;
       return (
         <InputCell
+          ref={(ref) => {
+            if (!ref) return;
+            onInitialize?.([
+              {
+                ...CELL_WITHOUT_SUBCELL,
+                focus: () => ref.focus(),
+              },
+            ]);
+          }}
           className="h-full"
           type="number"
           value={value}
-          onChange={(newValue) => callbackFn?.(Number(newValue))}
-          onFocus={onFocus}
-          ref={(ref) => {
-            if (!ref) return;
-            setFocusList?.([() => ref.focus()]);
-          }}
-          onKeyDownUp={onKeyDown?.up}
-          onKeyDownDown={onKeyDown?.down}
-          onKeyDownLeft={onKeyDown?.left}
-          onKeyDownRight={onKeyDown?.right}
+          onChange={(newValue) => onChange?.(Number(newValue))}
+          onFocus={() => onFocus?.(CELL_WITHOUT_SUBCELL)}
+          onKeyDownUp={onKeyDownUp}
+          onKeyDownDown={onKeyDownDown}
+          onKeyDownLeft={onKeyDownLeft}
+          onKeyDownRight={onKeyDownRight}
         />
       );
     },
@@ -92,23 +114,37 @@ const columns: {
   {
     accessorKey: "name",
     header: () => <span>名前</span>,
-    cell: ({ value, callbackFn, setFocusList, onKeyDown, onFocus }) => {
+    cell: ({
+      value,
+      onChange,
+      onFocus,
+      onKeyDownUp,
+      onKeyDownDown,
+      onKeyDownLeft,
+      onKeyDownRight,
+      onInitialize,
+    }) => {
       if (typeof value !== "string") return null;
       return (
         <InputCell
+          ref={(ref) => {
+            if (!ref) return;
+            onInitialize?.([
+              {
+                ...CELL_WITHOUT_SUBCELL,
+                focus: () => ref.focus(),
+              },
+            ]);
+          }}
           className="h-full"
           type="text"
           value={value}
-          onChange={(newValue) => callbackFn?.(newValue)}
-          onFocus={onFocus}
-          ref={(ref) => {
-            if (!ref) return;
-            setFocusList?.([() => ref.focus()]);
-          }}
-          onKeyDownUp={onKeyDown?.up}
-          onKeyDownDown={onKeyDown?.down}
-          onKeyDownLeft={onKeyDown?.left}
-          onKeyDownRight={onKeyDown?.right}
+          onChange={(newValue) => onChange?.(newValue)}
+          onFocus={() => onFocus?.(CELL_WITHOUT_SUBCELL)}
+          onKeyDownUp={onKeyDownUp}
+          onKeyDownDown={onKeyDownDown}
+          onKeyDownLeft={onKeyDownLeft}
+          onKeyDownRight={onKeyDownRight}
         />
       );
     },
@@ -116,23 +152,37 @@ const columns: {
   {
     accessorKey: "age",
     header: () => <span>年齢</span>,
-    cell: ({ value, callbackFn, setFocusList, onKeyDown, onFocus }) => {
+    cell: ({
+      value,
+      onChange,
+      onFocus,
+      onKeyDownUp,
+      onKeyDownDown,
+      onKeyDownLeft,
+      onKeyDownRight,
+      onInitialize,
+    }) => {
       if (typeof value !== "number") return null;
       return (
         <InputCell
+          ref={(ref) => {
+            if (!ref) return;
+            onInitialize?.([
+              {
+                ...CELL_WITHOUT_SUBCELL,
+                focus: () => ref.focus(),
+              },
+            ]);
+          }}
           className="h-full"
           type="number"
           value={value}
-          onChange={(newValue) => callbackFn?.(Number(newValue))}
-          onFocus={onFocus}
-          ref={(ref) => {
-            if (!ref) return;
-            setFocusList?.([() => ref.focus()]);
-          }}
-          onKeyDownUp={onKeyDown?.up}
-          onKeyDownDown={onKeyDown?.down}
-          onKeyDownLeft={onKeyDown?.left}
-          onKeyDownRight={onKeyDown?.right}
+          onChange={(newValue) => onChange?.(Number(newValue))}
+          onFocus={() => onFocus?.(CELL_WITHOUT_SUBCELL)}
+          onKeyDownUp={onKeyDownUp}
+          onKeyDownDown={onKeyDownDown}
+          onKeyDownLeft={onKeyDownLeft}
+          onKeyDownRight={onKeyDownRight}
         />
       );
     },
@@ -140,23 +190,37 @@ const columns: {
   {
     accessorKey: "email",
     header: () => <span>メールアドレス</span>,
-    cell: ({ value, callbackFn, setFocusList, onKeyDown, onFocus }) => {
+    cell: ({
+      value,
+      onChange,
+      onFocus,
+      onKeyDownUp,
+      onKeyDownDown,
+      onKeyDownLeft,
+      onKeyDownRight,
+      onInitialize,
+    }) => {
       if (typeof value !== "string") return null;
       return (
         <InputCell
+          ref={(ref) => {
+            if (!ref) return;
+            onInitialize?.([
+              {
+                ...CELL_WITHOUT_SUBCELL,
+                focus: () => ref.focus(),
+              },
+            ]);
+          }}
           className="h-full"
           type="email"
           value={value}
-          onChange={(newValue) => callbackFn?.(newValue)}
-          onFocus={onFocus}
-          ref={(ref) => {
-            if (!ref) return;
-            setFocusList?.([() => ref.focus()]);
-          }}
-          onKeyDownUp={onKeyDown?.up}
-          onKeyDownDown={onKeyDown?.down}
-          onKeyDownLeft={onKeyDown?.left}
-          onKeyDownRight={onKeyDown?.right}
+          onChange={(newValue) => onChange?.(newValue)}
+          onFocus={() => onFocus?.(CELL_WITHOUT_SUBCELL)}
+          onKeyDownUp={onKeyDownUp}
+          onKeyDownDown={onKeyDownDown}
+          onKeyDownLeft={onKeyDownLeft}
+          onKeyDownRight={onKeyDownRight}
         />
       );
     },
@@ -172,64 +236,113 @@ const columns: {
         <div className="row-start-1 row-span-3 col-start-3 p-1">血圧平均</div>
       </div>
     ),
-    cell: ({ value, callbackFn, setFocusList }) => {
+    cell: ({
+      value,
+      onChange,
+      onFocus,
+      onKeyDownUp,
+      onKeyDownDown,
+      onKeyDownLeft,
+      onKeyDownRight,
+      onInitialize,
+    }) => {
       const valueAsUnknown: unknown = value;
       if (!isBloodPressure(valueAsUnknown)) return null;
       const { systolic, diastolic, average } = valueAsUnknown;
 
-      const hoge: (() => void)[] = [() => {}, () => {}, () => {}];
+      const subCells: [Cell, Cell, Cell] = [
+        {
+          topRow: 0,
+          leftColumn: 0,
+          bottomRow: 1 / 2,
+          rightColumn: 1 / 2,
+          focus: () => {},
+        },
+        {
+          topRow: 1 / 2,
+          leftColumn: 0,
+          bottomRow: 1,
+          rightColumn: 1 / 2,
+          focus: () => {},
+        },
+        {
+          topRow: 0,
+          leftColumn: 1 / 2,
+          bottomRow: 1,
+          rightColumn: 1,
+          focus: () => {},
+        },
+      ];
 
       return (
         <div className="grid grid-cols-[1fr_1px_1fr] grid-rows-[1fr_1px_1fr] place-items-center">
           <InputCell
+            ref={(ref) => {
+              if (!ref) return;
+              subCells[0].focus = () => ref.focus();
+              if (!subCells.some((h) => h === undefined))
+                onInitialize?.(subCells);
+            }}
             className="row-start-1 col-start-1 p-1 h-full"
             type="number"
             value={systolic}
             onChange={(newValue) =>
-              callbackFn?.({
+              onChange?.({
                 ...valueAsUnknown,
                 systolic: Number(newValue),
               })
             }
-            ref={(ref) => {
-              if (!ref) return;
-              hoge[0] = () => ref.focus();
-              if (!hoge.some((h) => h === undefined)) setFocusList?.(hoge);
-            }}
+            onFocus={() => onFocus?.(subCells[0])}
+            onKeyDownUp={onKeyDownUp}
+            onKeyDownDown={onKeyDownDown}
+            onKeyDownLeft={onKeyDownLeft}
+            onKeyDownRight={onKeyDownRight}
           />
           <div className="row-start-2 col-start-1 border-b border-gray-300 w-full h-full" />
           <InputCell
+            ref={(ref) => {
+              if (!ref) return;
+              subCells[1].focus = () => ref.focus();
+              if (!subCells.some((h) => h === undefined))
+                onInitialize?.(subCells);
+            }}
             className="row-start-3 col-start-1 p-1 h-full"
             type="number"
             value={diastolic}
             onChange={(newValue) =>
-              callbackFn?.({
+              onChange?.({
                 ...valueAsUnknown,
                 diastolic: Number(newValue),
               })
             }
-            ref={(ref) => {
-              if (!ref) return;
-              hoge[1] = () => ref.focus();
-              if (!hoge.some((h) => h === undefined)) setFocusList?.(hoge);
-            }}
+            onFocus={() => onFocus?.(subCells[1])}
+            onKeyDownUp={onKeyDownUp}
+            onKeyDownDown={onKeyDownDown}
+            onKeyDownLeft={onKeyDownLeft}
+            onKeyDownRight={onKeyDownRight}
           />
           <div className="row-start-1 row-span-3 col-start-2 border-r border-gray-300 w-full h-full" />
           <InputCell
+            ref={(ref) => {
+              if (!ref) return;
+              subCells[2].focus = () => ref.focus();
+              if (!subCells.some((h) => h === undefined))
+                onInitialize?.(subCells);
+            }}
             className="row-start-1 row-span-3 col-start-3 p-1 h-full"
             type="number"
             value={average}
             onChange={(newValue) =>
-              callbackFn?.({
+              onChange?.({
                 ...valueAsUnknown,
                 average: Number(newValue),
               })
             }
-            ref={(ref) => {
-              if (!ref) return;
-              hoge[2] = () => ref.focus();
-              if (!hoge.some((h) => h === undefined)) setFocusList?.(hoge);
-            }}
+            onFocus={() => onFocus?.(subCells[2])}
+            onKeyDownUp={onKeyDownUp}
+            onKeyDownDown={onKeyDownDown}
+            onKeyDownLeft={onKeyDownLeft}
+            onKeyDownRight={onKeyDownRight}
           />
         </div>
       );
@@ -312,7 +425,7 @@ export default function GridTablePage() {
     initialData,
   );
 
-  const columnCallbackFn =
+  const handleChange =
     ({
       columnAccessorKey,
       rowIndex,
@@ -412,41 +525,43 @@ export default function GridTablePage() {
                     rowIndex,
                     columnAccessorKey: column.accessorKey,
                     value: row[column.accessorKey],
-                    callbackFn: columnCallbackFn({
+                    onChange: handleChange({
                       columnAccessorKey: column.accessorKey,
                       rowIndex,
                     }),
-                    setFocusList: (focuses) => {
-                      addCell({
-                        topRow: rowIndex,
-                        leftColumn: columns.findIndex(
-                          (col) => col.accessorKey === column.accessorKey,
-                        ),
-                        bottomRow: rowIndex + 1,
+                    onFocus: (cell) => {
+                      focusCell({
+                        topRow: rowIndex + cell.topRow,
+                        leftColumn:
+                          columns.findIndex(
+                            (col) => col.accessorKey === column.accessorKey,
+                          ) + cell.leftColumn,
+                        bottomRow: rowIndex + cell.bottomRow,
                         rightColumn:
                           columns.findIndex(
                             (col) => col.accessorKey === column.accessorKey,
-                          ) + 1,
-                        focus: () => focuses[0](),
+                          ) + cell.rightColumn,
                       });
                     },
-                    onKeyDown: {
-                      up: moveUp,
-                      down: moveDown,
-                      left: moveLeft,
-                      right: moveRight,
-                    },
-                    onFocus: () => {
-                      focusCell({
-                        topRow: rowIndex,
-                        leftColumn: columns.findIndex(
-                          (col) => col.accessorKey === column.accessorKey,
-                        ),
-                        bottomRow: rowIndex + 1,
-                        rightColumn:
-                          columns.findIndex(
-                            (col) => col.accessorKey === column.accessorKey,
-                          ) + 1,
+                    onKeyDownUp: moveUp,
+                    onKeyDownDown: moveDown,
+                    onKeyDownLeft: moveLeft,
+                    onKeyDownRight: moveRight,
+                    onInitialize: (subCells) => {
+                      subCells.forEach((subCell) => {
+                        addCell({
+                          topRow: rowIndex + subCell.topRow,
+                          leftColumn:
+                            columns.findIndex(
+                              (col) => col.accessorKey === column.accessorKey,
+                            ) + subCell.leftColumn,
+                          bottomRow: rowIndex + subCell.bottomRow,
+                          rightColumn:
+                            columns.findIndex(
+                              (col) => col.accessorKey === column.accessorKey,
+                            ) + subCell.rightColumn,
+                          focus: () => subCell.focus(),
+                        });
                       });
                     },
                   })}
