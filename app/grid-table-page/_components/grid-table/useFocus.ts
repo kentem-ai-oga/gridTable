@@ -46,8 +46,7 @@ export default function useFocus() {
       if (selectedCellMiddleColumn >= cell.rightColumn) return false;
       return true;
     });
-    if (!upCell) return;
-    upCell.focus();
+    upCell?.focus();
   };
 
   const moveDown = () => {
@@ -63,8 +62,7 @@ export default function useFocus() {
       if (selectedCellMiddleColumn >= cell.rightColumn) return false;
       return true;
     });
-    if (!downCell) return;
-    downCell.focus();
+    downCell?.focus();
   };
 
   const moveLeft = () => {
@@ -79,8 +77,7 @@ export default function useFocus() {
       if (selectedCellMiddleRow > cell.bottomRow) return false;
       return true;
     });
-    if (!leftCell) return;
-    leftCell.focus();
+    leftCell?.focus();
   };
 
   const moveRight = () => {
@@ -95,8 +92,7 @@ export default function useFocus() {
       if (selectedCellMiddleRow > cell.bottomRow) return false;
       return true;
     });
-    if (!rightCell) return;
-    rightCell.focus();
+    rightCell?.focus();
   };
 
   return {
