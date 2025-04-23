@@ -47,7 +47,6 @@ export default function useFocus() {
       return true;
     });
     if (!upCell) return;
-    selectedCellRef.current = upCell;
     upCell.focus();
   };
 
@@ -65,7 +64,6 @@ export default function useFocus() {
       return true;
     });
     if (!downCell) return;
-    selectedCellRef.current = downCell;
     downCell.focus();
   };
 
@@ -82,7 +80,6 @@ export default function useFocus() {
       return true;
     });
     if (!leftCell) return;
-    selectedCellRef.current = leftCell;
     leftCell.focus();
   };
 
@@ -99,7 +96,6 @@ export default function useFocus() {
       return true;
     });
     if (!rightCell) return;
-    selectedCellRef.current = rightCell;
     rightCell.focus();
   };
 
