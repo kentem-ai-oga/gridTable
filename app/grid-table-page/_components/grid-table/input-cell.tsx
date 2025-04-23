@@ -52,11 +52,15 @@ export default forwardRef<{ focus: () => void }, Props>(function InputCell(
 
   // このコンポーネントからfocusだけをrefとして外に出すためのもの
   // https://ja.react.dev/reference/react/useImperativeHandle
-  useImperativeHandle(ref, () => ({
-    focus: () => {
-      selectedInputRef.current?.focus();
-    },
-  }));
+  useImperativeHandle(
+    ref,
+    () => ({
+      focus: () => {
+        selectedInputRef.current?.focus();
+      },
+    }),
+    [],
+  );
 
   return mode === "selected" ? (
     <input

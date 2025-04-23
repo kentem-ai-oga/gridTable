@@ -292,7 +292,7 @@ const columns: {
             ref={(ref) => {
               if (!ref) return;
               subCells[0].focus = () => ref.focus();
-              if (!subCells.some((h) => h === undefined))
+              if (!subCells.some((h) => h === undefined)) // TODO:あとでなおす
                 onInitialize?.(subCells);
             }}
             className="row-start-1 col-start-1 p-1 h-full"
