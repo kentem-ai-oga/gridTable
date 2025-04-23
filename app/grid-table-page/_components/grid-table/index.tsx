@@ -69,8 +69,14 @@ export default function GridTable<T extends ColumnType>({
   formState,
   onChange,
 }: Props<T>) {
-  const { addCell, focusCell, moveUp, moveDown, moveLeft, moveRight } =
-    useFocus();
+  const {
+    setCellForFocus,
+    setFocusedCell,
+    moveUp,
+    moveDown,
+    moveLeft,
+    moveRight,
+  } = useFocus();
 
   return (
     <div>
@@ -109,7 +115,7 @@ export default function GridTable<T extends ColumnType>({
                         value,
                       }),
                     onFocus: (cell) => {
-                      focusCell({
+                      setFocusedCell({
                         topRow: rowIndex + cell.topRow,
                         leftColumn:
                           columns.findIndex(
@@ -128,7 +134,7 @@ export default function GridTable<T extends ColumnType>({
                     onKeyDownRight: moveRight,
                     onInitialize: (subCells) => {
                       subCells.forEach((subCell) => {
-                        addCell({
+                        setCellForFocus({
                           topRow: rowIndex + subCell.topRow,
                           leftColumn:
                             columns.findIndex(

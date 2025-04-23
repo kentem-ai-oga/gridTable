@@ -15,32 +15,32 @@ export type Cell = {
 };
 
 export default function useFocus() {
-  const cellsRef = useRef<Cell[]>([]);
-  const selectedCellRef = useRef<Cell>(undefined);
+  const cellsForFocusRef = useRef<Cell[]>([]);
+  const focusedCellRef = useRef<Cell>(undefined);
 
-  const addCell = (cell: Cell) => {
-    cellsRef.current.push(cell);
+  const setCellForFocus = (cell: Cell) => {
+    cellsForFocusRef.current.push(cell);
   };
 
-  const focusCell = (cellToFocus: Omit<Cell, "focus">) => {
-    const targetCell = cellsRef.current.find((cell) => {
+  const setFocusedCell = (cellToFocus: Omit<Cell, "focus">) => {
+    const targetCell = cellsForFocusRef.current.find((cell) => {
       if (cell.topRow !== cellToFocus.topRow) return false;
       if (cell.leftColumn !== cellToFocus.leftColumn) return false;
       if (cell.bottomRow !== cellToFocus.bottomRow) return false;
       if (cell.rightColumn !== cellToFocus.rightColumn) return false;
       return true;
     });
-    selectedCellRef.current = targetCell;
+    focusedCellRef.current = targetCell;
   };
 
   const moveUp = () => {
-    const upCell = cellsRef.current.find((cell) => {
-      if (!selectedCellRef.current) return false;
-      if (selectedCellRef.current.topRow !== cell.bottomRow) return false;
+    const upCell = cellsForFocusRef.current.find((cell) => {
+      if (!focusedCellRef.current) return false;
+      if (focusedCellRef.current.topRow !== cell.bottomRow) return false;
 
       const selectedCellMiddleColumn =
-        (selectedCellRef.current.leftColumn +
-          selectedCellRef.current.rightColumn) /
+        (focusedCellRef.current.leftColumn +
+          focusedCellRef.current.rightColumn) /
         2;
       if (selectedCellMiddleColumn < cell.leftColumn) return false;
       if (selectedCellMiddleColumn >= cell.rightColumn) return false;
@@ -50,13 +50,13 @@ export default function useFocus() {
   };
 
   const moveDown = () => {
-    const downCell = cellsRef.current.find((cell) => {
-      if (!selectedCellRef.current) return false;
-      if (selectedCellRef.current.bottomRow !== cell.topRow) return false;
+    const downCell = cellsForFocusRef.current.find((cell) => {
+      if (!focusedCellRef.current) return false;
+      if (focusedCellRef.current.bottomRow !== cell.topRow) return false;
 
       const selectedCellMiddleColumn =
-        (selectedCellRef.current.leftColumn +
-          selectedCellRef.current.rightColumn) /
+        (focusedCellRef.current.leftColumn +
+          focusedCellRef.current.rightColumn) /
         2;
       if (selectedCellMiddleColumn < cell.leftColumn) return false;
       if (selectedCellMiddleColumn >= cell.rightColumn) return false;
@@ -66,13 +66,12 @@ export default function useFocus() {
   };
 
   const moveLeft = () => {
-    const leftCell = cellsRef.current.find((cell) => {
-      if (!selectedCellRef.current) return false;
-      if (selectedCellRef.current.leftColumn !== cell.rightColumn) return false;
+    const leftCell = cellsForFocusRef.current.find((cell) => {
+      if (!focusedCellRef.current) return false;
+      if (focusedCellRef.current.leftColumn !== cell.rightColumn) return false;
 
       const selectedCellMiddleRow =
-        (selectedCellRef.current.topRow + selectedCellRef.current.bottomRow) /
-        2;
+        (focusedCellRef.current.topRow + focusedCellRef.current.bottomRow) / 2;
       if (selectedCellMiddleRow <= cell.topRow) return false;
       if (selectedCellMiddleRow > cell.bottomRow) return false;
       return true;
@@ -81,13 +80,12 @@ export default function useFocus() {
   };
 
   const moveRight = () => {
-    const rightCell = cellsRef.current.find((cell) => {
-      if (!selectedCellRef.current) return false;
-      if (selectedCellRef.current.rightColumn !== cell.leftColumn) return false;
+    const rightCell = cellsForFocusRef.current.find((cell) => {
+      if (!focusedCellRef.current) return false;
+      if (focusedCellRef.current.rightColumn !== cell.leftColumn) return false;
 
       const selectedCellMiddleRow =
-        (selectedCellRef.current.topRow + selectedCellRef.current.bottomRow) /
-        2;
+        (focusedCellRef.current.topRow + focusedCellRef.current.bottomRow) / 2;
       if (selectedCellMiddleRow <= cell.topRow) return false;
       if (selectedCellMiddleRow > cell.bottomRow) return false;
       return true;
@@ -96,8 +94,8 @@ export default function useFocus() {
   };
 
   return {
-    addCell,
-    focusCell,
+    setCellForFocus,
+    setFocusedCell,
     moveUp,
     moveDown,
     moveLeft,
