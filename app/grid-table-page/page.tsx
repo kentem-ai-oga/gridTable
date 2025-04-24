@@ -196,9 +196,8 @@ const columns: {
       </div>
     ),
     cell: ({ value, onChange, onFocus, onKeyDown, onInitialize }) => {
-      const valueAsUnknown: unknown = value;
-      if (!isBloodPressure(valueAsUnknown)) return null;
-      const { systolic, diastolic, average } = valueAsUnknown;
+      if (!isBloodPressure(value)) return null;
+      const { systolic, diastolic, average } = value;
 
       // セル内でサブセルを分けるために、分割している
       const subCells: [Cell, Cell, Cell] = [
@@ -240,13 +239,13 @@ const columns: {
               const valueAsNumber = Number(newValue);
               if (isNaN(valueAsNumber)) {
                 onChange?.({
-                  ...valueAsUnknown,
+                  ...value,
                   systolic: 0,
                 });
                 return;
               }
               onChange?.({
-                ...valueAsUnknown,
+                ...value,
                 systolic: valueAsNumber,
               });
             }}
@@ -267,13 +266,13 @@ const columns: {
               const valueAsNumber = Number(newValue);
               if (isNaN(valueAsNumber)) {
                 onChange?.({
-                  ...valueAsUnknown,
+                  ...value,
                   diastolic: 0,
                 });
                 return;
               }
               onChange?.({
-                ...valueAsUnknown,
+                ...value,
                 diastolic: valueAsNumber,
               });
             }}
@@ -294,13 +293,13 @@ const columns: {
               const valueAsNumber = Number(newValue);
               if (isNaN(valueAsNumber)) {
                 onChange?.({
-                  ...valueAsUnknown,
+                  ...value,
                   average: 0,
                 });
                 return;
               }
               onChange?.({
-                ...valueAsUnknown,
+                ...value,
                 average: valueAsNumber,
               });
             }}
