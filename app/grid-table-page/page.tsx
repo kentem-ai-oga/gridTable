@@ -229,9 +229,7 @@ const columns: {
             ref={(ref) => {
               if (!ref) return;
               subCells[0].focus = () => ref.focus();
-              if (!subCells.some((h) => h === undefined))
-                // TODO:あとでなおす
-                onInitialize?.(subCells);
+              onInitialize?.(subCells); // 本当は3つ揃ってからで良い
             }}
             className="row-start-1 col-start-1 p-1 h-full"
             type="number"
@@ -258,8 +256,7 @@ const columns: {
             ref={(ref) => {
               if (!ref) return;
               subCells[1].focus = () => ref.focus();
-              if (!subCells.some((h) => h === undefined))
-                onInitialize?.(subCells);
+              onInitialize?.(subCells);
             }}
             className="row-start-3 col-start-1 p-1 h-full"
             type="number"
@@ -286,8 +283,7 @@ const columns: {
             ref={(ref) => {
               if (!ref) return;
               subCells[2].focus = () => ref.focus();
-              if (!subCells.some((h) => h === undefined))
-                onInitialize?.(subCells);
+              onInitialize?.(subCells);
             }}
             className="row-start-1 row-span-3 col-start-3 p-1 h-full"
             type="number"
