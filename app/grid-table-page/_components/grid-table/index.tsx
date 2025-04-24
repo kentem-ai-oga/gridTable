@@ -32,10 +32,7 @@ type Column<T extends ColumnType> = {
     onChange,
     onFocus,
     onInitialize,
-    onKeyDownUp,
-    onKeyDownDown,
-    onKeyDownLeft,
-    onKeyDownRight,
+    onKeyDown,
   }: {
     rowIndex: number;
     columnAccessorKey: Exclude<keyof T, symbol>;
@@ -43,10 +40,7 @@ type Column<T extends ColumnType> = {
     onChange?: (value: unknown) => void;
     onFocus?: (cell: Omit<Cell, "focus">) => void;
     onInitialize?: (subCells: Cell[]) => void;
-    onKeyDownUp?: () => void;
-    onKeyDownDown?: () => void;
-    onKeyDownLeft?: () => void;
-    onKeyDownRight?: () => void;
+    onKeyDown?: (key: "up" | "down" | "left" | "right") => void;
   }) => ReactNode;
 };
 
@@ -128,10 +122,22 @@ export default function GridTable<T extends ColumnType>({
                           ) + cell.rightColumn,
                       });
                     },
-                    onKeyDownUp: moveUp,
-                    onKeyDownDown: moveDown,
-                    onKeyDownLeft: moveLeft,
-                    onKeyDownRight: moveRight,
+                    onKeyDown: (key) => {
+                      switch (key) {
+                        case "up":
+                          moveUp();
+                          break;
+                        case "down":
+                          moveDown();
+                          break;
+                        case "left":
+                          moveLeft();
+                          break;
+                        case "right":
+                          moveRight();
+                          break;
+                      }
+                    },
                     onInitialize: (subCells) => {
                       subCells.forEach((subCell) => {
                         setCellForFocus({
