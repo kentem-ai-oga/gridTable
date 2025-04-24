@@ -14,24 +14,11 @@ type Props = Pick<ComponentProps<"input">, "className" | "type"> & {
   value?: string | number;
   onChange?: (newValue: string | number) => void;
   onFocus?: () => void;
-  onKeyDownUp?: () => void;
-  onKeyDownDown?: () => void;
-  onKeyDownLeft?: () => void;
-  onKeyDownRight?: () => void;
+  onKeyDown?: (key: "up" | "down" | "left" | "right") => void;
 };
 
 export default forwardRef<{ focus: () => void }, Props>(function InputCell(
-  {
-    type = "text",
-    className,
-    value,
-    onChange,
-    onFocus,
-    onKeyDownUp,
-    onKeyDownDown,
-    onKeyDownLeft,
-    onKeyDownRight,
-  },
+  { type = "text", className, value, onChange, onFocus, onKeyDown },
   ref,
 ) {
   // Excelのセルをクリックしたときの状態がselected、ダブルクリックしたときの状態がediting
@@ -93,30 +80,30 @@ export default forwardRef<{ focus: () => void }, Props>(function InputCell(
         switch (e.key) {
           case "ArrowUp":
             e.preventDefault();
-            onKeyDownUp?.();
+            onKeyDown?.("up");
             break;
           case "ArrowDown":
             e.preventDefault();
-            onKeyDownDown?.();
-            break;
-          case "ArrowRight":
-            e.preventDefault();
-            onKeyDownRight?.();
+            onKeyDown?.("down");
             break;
           case "ArrowLeft":
             e.preventDefault();
-            onKeyDownLeft?.();
+            onKeyDown?.("left");
+            break;
+          case "ArrowRight":
+            e.preventDefault();
+            onKeyDown?.("right");
             break;
           case "Enter": {
             e.preventDefault();
-            if (e.shiftKey) onKeyDownUp?.();
-            else onKeyDownDown?.();
+            if (e.shiftKey) onKeyDown?.("up");
+            else onKeyDown?.("down");
             break;
           }
           case "Tab":
             e.preventDefault();
-            if (e.shiftKey) onKeyDownLeft?.();
-            else onKeyDownRight?.();
+            if (e.shiftKey) onKeyDown?.("left");
+            else onKeyDown?.("right");
             break;
           case "Delete":
             if (isJustFocused) {
@@ -163,14 +150,14 @@ export default forwardRef<{ focus: () => void }, Props>(function InputCell(
         switch (e.key) {
           case "Enter": {
             e.preventDefault();
-            if (e.shiftKey) onKeyDownUp?.();
-            else onKeyDownDown?.();
+            if (e.shiftKey) onKeyDown?.("up");
+            else onKeyDown?.("down");
             break;
           }
           case "Tab":
             e.preventDefault();
-            if (e.shiftKey) onKeyDownLeft?.();
-            else onKeyDownRight?.();
+            if (e.shiftKey) onKeyDown?.("left");
+            else onKeyDown?.("right");
             break;
           case "Escape":
             e.preventDefault();

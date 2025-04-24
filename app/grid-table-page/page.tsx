@@ -52,10 +52,7 @@ const columns: {
     onChange,
     onFocus,
     onInitialize,
-    onKeyDownUp,
-    onKeyDownDown,
-    onKeyDownLeft,
-    onKeyDownRight,
+    onKeyDown,
   }: {
     rowIndex: number;
     columnAccessorKey: keyof Person;
@@ -63,25 +60,13 @@ const columns: {
     onChange?: (value: unknown) => void;
     onFocus?: (cell: Omit<Cell, "focus">) => void;
     onInitialize?: (subCells: Cell[]) => void;
-    onKeyDownUp?: () => void;
-    onKeyDownDown?: () => void;
-    onKeyDownLeft?: () => void;
-    onKeyDownRight?: () => void;
+    onKeyDown?: (key: "up" | "down" | "left" | "right") => void;
   }) => ReactNode;
 }[] = [
   {
     accessorKey: "id",
     header: () => <span>ID</span>,
-    cell: ({
-      value,
-      onChange,
-      onFocus,
-      onKeyDownUp,
-      onKeyDownDown,
-      onKeyDownLeft,
-      onKeyDownRight,
-      onInitialize,
-    }) => {
+    cell: ({ value, onChange, onFocus, onKeyDown, onInitialize }) => {
       if (typeof value !== "number") return null;
       return (
         <InputCell
@@ -107,10 +92,7 @@ const columns: {
             onChange?.(valueAsNumber);
           }}
           onFocus={() => onFocus?.(CELL_WITHOUT_SUBCELL)}
-          onKeyDownUp={onKeyDownUp}
-          onKeyDownDown={onKeyDownDown}
-          onKeyDownLeft={onKeyDownLeft}
-          onKeyDownRight={onKeyDownRight}
+          onKeyDown={onKeyDown}
         />
       );
     },
@@ -118,16 +100,7 @@ const columns: {
   {
     accessorKey: "name",
     header: () => <span>名前</span>,
-    cell: ({
-      value,
-      onChange,
-      onFocus,
-      onKeyDownUp,
-      onKeyDownDown,
-      onKeyDownLeft,
-      onKeyDownRight,
-      onInitialize,
-    }) => {
+    cell: ({ value, onChange, onFocus, onKeyDown, onInitialize }) => {
       if (typeof value !== "string") return null;
       return (
         <InputCell
@@ -145,10 +118,7 @@ const columns: {
           value={value}
           onChange={(newValue) => onChange?.(newValue)}
           onFocus={() => onFocus?.(CELL_WITHOUT_SUBCELL)}
-          onKeyDownUp={onKeyDownUp}
-          onKeyDownDown={onKeyDownDown}
-          onKeyDownLeft={onKeyDownLeft}
-          onKeyDownRight={onKeyDownRight}
+          onKeyDown={onKeyDown}
         />
       );
     },
@@ -156,16 +126,7 @@ const columns: {
   {
     accessorKey: "age",
     header: () => <span>年齢</span>,
-    cell: ({
-      value,
-      onChange,
-      onFocus,
-      onKeyDownUp,
-      onKeyDownDown,
-      onKeyDownLeft,
-      onKeyDownRight,
-      onInitialize,
-    }) => {
+    cell: ({ value, onChange, onFocus, onKeyDown, onInitialize }) => {
       if (typeof value !== "number") return null;
       return (
         <InputCell
@@ -190,10 +151,7 @@ const columns: {
             onChange?.(valueAsNumber);
           }}
           onFocus={() => onFocus?.(CELL_WITHOUT_SUBCELL)}
-          onKeyDownUp={onKeyDownUp}
-          onKeyDownDown={onKeyDownDown}
-          onKeyDownLeft={onKeyDownLeft}
-          onKeyDownRight={onKeyDownRight}
+          onKeyDown={onKeyDown}
         />
       );
     },
@@ -201,16 +159,7 @@ const columns: {
   {
     accessorKey: "email",
     header: () => <span>メールアドレス</span>,
-    cell: ({
-      value,
-      onChange,
-      onFocus,
-      onKeyDownUp,
-      onKeyDownDown,
-      onKeyDownLeft,
-      onKeyDownRight,
-      onInitialize,
-    }) => {
+    cell: ({ value, onChange, onFocus, onKeyDown, onInitialize }) => {
       if (typeof value !== "string") return null;
       return (
         <InputCell
@@ -228,10 +177,7 @@ const columns: {
           value={value}
           onChange={(newValue) => onChange?.(newValue)}
           onFocus={() => onFocus?.(CELL_WITHOUT_SUBCELL)}
-          onKeyDownUp={onKeyDownUp}
-          onKeyDownDown={onKeyDownDown}
-          onKeyDownLeft={onKeyDownLeft}
-          onKeyDownRight={onKeyDownRight}
+          onKeyDown={onKeyDown}
         />
       );
     },
@@ -247,16 +193,7 @@ const columns: {
         <div className="row-start-1 row-span-3 col-start-3 p-1">血圧平均</div>
       </div>
     ),
-    cell: ({
-      value,
-      onChange,
-      onFocus,
-      onKeyDownUp,
-      onKeyDownDown,
-      onKeyDownLeft,
-      onKeyDownRight,
-      onInitialize,
-    }) => {
+    cell: ({ value, onChange, onFocus, onKeyDown, onInitialize }) => {
       const valueAsUnknown: unknown = value;
       if (!isBloodPressure(valueAsUnknown)) return null;
       const { systolic, diastolic, average } = valueAsUnknown;
@@ -292,7 +229,8 @@ const columns: {
             ref={(ref) => {
               if (!ref) return;
               subCells[0].focus = () => ref.focus();
-              if (!subCells.some((h) => h === undefined)) // TODO:あとでなおす
+              if (!subCells.some((h) => h === undefined))
+                // TODO:あとでなおす
                 onInitialize?.(subCells);
             }}
             className="row-start-1 col-start-1 p-1 h-full"
@@ -313,10 +251,7 @@ const columns: {
               });
             }}
             onFocus={() => onFocus?.(subCells[0])}
-            onKeyDownUp={onKeyDownUp}
-            onKeyDownDown={onKeyDownDown}
-            onKeyDownLeft={onKeyDownLeft}
-            onKeyDownRight={onKeyDownRight}
+            onKeyDown={onKeyDown}
           />
           <div className="row-start-2 col-start-1 border-b border-gray-300 w-full h-full" />
           <InputCell
@@ -344,10 +279,7 @@ const columns: {
               });
             }}
             onFocus={() => onFocus?.(subCells[1])}
-            onKeyDownUp={onKeyDownUp}
-            onKeyDownDown={onKeyDownDown}
-            onKeyDownLeft={onKeyDownLeft}
-            onKeyDownRight={onKeyDownRight}
+            onKeyDown={onKeyDown}
           />
           <div className="row-start-1 row-span-3 col-start-2 border-r border-gray-300 w-full h-full" />
           <InputCell
@@ -375,10 +307,7 @@ const columns: {
               });
             }}
             onFocus={() => onFocus?.(subCells[2])}
-            onKeyDownUp={onKeyDownUp}
-            onKeyDownDown={onKeyDownDown}
-            onKeyDownLeft={onKeyDownLeft}
-            onKeyDownRight={onKeyDownRight}
+            onKeyDown={onKeyDown}
           />
         </div>
       );
