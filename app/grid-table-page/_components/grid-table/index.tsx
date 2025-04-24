@@ -1,7 +1,6 @@
 // GridTable本体
 
-import { ReactNode } from "react";
-import useFocus, { Cell } from "./useFocus";
+import { ReactNode, useRef } from "react";
 
 // 1セルの中でセルが分割されないケースで使う
 export const CELL_WITHOUT_SUBCELL = {
@@ -10,6 +9,18 @@ export const CELL_WITHOUT_SUBCELL = {
   bottomRow: 1,
   rightColumn: 1,
 } as const satisfies Omit<Cell, "focus">;
+
+export type Cell = {
+  /** セルの上端行 */
+  topRow: number;
+  /** セルの左端列 */
+  leftColumn: number;
+  /** セルの下端行 */
+  bottomRow: number;
+  /** セルの右端列 */
+  rightColumn: number;
+  focus: () => void;
+};
 
 type ColumnType = Record<
   string | number,
@@ -63,14 +74,67 @@ export default function GridTable<T extends ColumnType>({
   formState,
   onChange,
 }: Props<T>) {
-  const {
-    setCellForFocus,
-    setFocusedCell,
-    moveUp,
-    moveDown,
-    moveLeft,
-    moveRight,
-  } = useFocus();
+  const cellsForFocusRef = useRef<Cell[]>([]);
+  const focusedCellRef = useRef<Cell>(undefined);
+
+  const setCellForFocus = (cell: Cell) => {
+    cellsForFocusRef.current.push(cell);
+  };
+
+  const setFocusedCell = (cellToFocus: Omit<Cell, "focus">) => {
+    const targetCell = cellsForFocusRef.current.find((cell) => {
+      if (cell.topRow !== cellToFocus.topRow) return false;
+      if (cell.leftColumn !== cellToFocus.leftColumn) return false;
+      if (cell.bottomRow !== cellToFocus.bottomRow) return false;
+      if (cell.rightColumn !== cellToFocus.rightColumn) return false;
+      return true;
+    });
+    focusedCellRef.current = targetCell;
+  };
+
+  const move = (direction: "up" | "down" | "left" | "right") => {
+    const targetCell = cellsForFocusRef.current.find((cell) => {
+      if (!focusedCellRef.current) return false;
+
+      const selectedCellMiddleColumn =
+        (focusedCellRef.current.leftColumn +
+          focusedCellRef.current.rightColumn) /
+        2;
+      const selectedCellMiddleRow =
+        (focusedCellRef.current.topRow + focusedCellRef.current.bottomRow) / 2;
+
+      switch (direction) {
+        case "up":
+          if (focusedCellRef.current.topRow !== cell.bottomRow) return false;
+          if (selectedCellMiddleColumn < cell.leftColumn) return false;
+          if (selectedCellMiddleColumn >= cell.rightColumn) return false;
+          break;
+        case "down":
+          if (focusedCellRef.current.bottomRow !== cell.topRow) return false;
+          if (selectedCellMiddleColumn < cell.leftColumn) return false;
+          if (selectedCellMiddleColumn >= cell.rightColumn) return false;
+          break;
+        case "left":
+          if (focusedCellRef.current.leftColumn !== cell.rightColumn)
+            return false;
+          if (selectedCellMiddleRow <= cell.topRow) return false;
+          if (selectedCellMiddleRow > cell.bottomRow) return false;
+          break;
+        case "right":
+          if (focusedCellRef.current.rightColumn !== cell.leftColumn)
+            return false;
+          if (selectedCellMiddleRow <= cell.topRow) return false;
+          if (selectedCellMiddleRow > cell.bottomRow) return false;
+          break;
+        default:
+          return false;
+      }
+
+      return true;
+    });
+
+    targetCell?.focus();
+  };
 
   return (
     <div>
@@ -122,22 +186,7 @@ export default function GridTable<T extends ColumnType>({
                           ) + cell.rightColumn,
                       });
                     },
-                    onKeyDown: (key) => {
-                      switch (key) {
-                        case "up":
-                          moveUp();
-                          break;
-                        case "down":
-                          moveDown();
-                          break;
-                        case "left":
-                          moveLeft();
-                          break;
-                        case "right":
-                          moveRight();
-                          break;
-                      }
-                    },
+                    onKeyDown: move,
                     onInitialize: (subCells) => {
                       subCells.forEach((subCell) => {
                         setCellForFocus({

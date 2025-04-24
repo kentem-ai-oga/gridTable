@@ -3,9 +3,11 @@
 "use client";
 
 import { ReactNode, useReducer } from "react";
-import GridTable, { CELL_WITHOUT_SUBCELL } from "./_components/grid-table";
+import GridTable, {
+  Cell,
+  CELL_WITHOUT_SUBCELL,
+} from "./_components/grid-table";
 import InputCell from "./_components/grid-table/input-cell";
-import { Cell } from "./_components/grid-table/useFocus";
 
 type Person = {
   id: number;
