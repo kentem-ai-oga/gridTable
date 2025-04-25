@@ -337,27 +337,23 @@ const INITIAL_DATA = [
 ] as const satisfies Person[];
 
 type Action =
-  | { type: "update"; rowIndex: number; accessorKey: "id"; value: Person["id"] }
+  | { rowIndex: number; accessorKey: "id"; value: Person["id"] }
   | {
-      type: "update";
       rowIndex: number;
       accessorKey: "name";
       value: Person["name"];
     }
   | {
-      type: "update";
       rowIndex: number;
       accessorKey: "age";
       value: Person["age"];
     }
   | {
-      type: "update";
       rowIndex: number;
       accessorKey: "email";
       value: Person["email"];
     }
   | {
-      type: "update";
       rowIndex: number;
       accessorKey: "bloodPressure";
       value: Person["bloodPressure"];
@@ -365,22 +361,16 @@ type Action =
 
 export default function GridTablePage() {
   const [formState, formDispatch] = useReducer(
-    (state: Person[], action: Action) => {
-      switch (action.type) {
-        case "update":
-          return state.map((row, index) => {
-            if (index === action.rowIndex) {
-              return {
-                ...row,
-                [action.accessorKey]: action.value,
-              };
-            }
-            return row;
-          });
-        default:
-          return state;
-      }
-    },
+    (state: Person[], action: Action) =>
+      state.map((row, index) => {
+        if (index === action.rowIndex) {
+          return {
+            ...row,
+            [action.accessorKey]: action.value,
+          };
+        }
+        return row;
+      }),
     INITIAL_DATA,
   );
 
@@ -397,7 +387,6 @@ export default function GridTablePage() {
       case "id": {
         if (typeof value === "number") {
           formDispatch({
-            type: "update",
             rowIndex,
             accessorKey: columnAccessorKey,
             value,
@@ -408,7 +397,6 @@ export default function GridTablePage() {
       case "name": {
         if (typeof value === "string") {
           formDispatch({
-            type: "update",
             rowIndex,
             accessorKey: columnAccessorKey,
             value,
@@ -419,7 +407,6 @@ export default function GridTablePage() {
       case "age": {
         if (typeof value === "number") {
           formDispatch({
-            type: "update",
             rowIndex,
             accessorKey: columnAccessorKey,
             value,
@@ -430,7 +417,6 @@ export default function GridTablePage() {
       case "email": {
         if (typeof value === "string") {
           formDispatch({
-            type: "update",
             rowIndex,
             accessorKey: columnAccessorKey,
             value,
@@ -441,7 +427,6 @@ export default function GridTablePage() {
       case "bloodPressure": {
         if (isBloodPressure(value)) {
           formDispatch({
-            type: "update",
             rowIndex,
             accessorKey: columnAccessorKey,
             value,
