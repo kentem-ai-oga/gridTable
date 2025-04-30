@@ -204,7 +204,7 @@ const DateCell = forwardRef<CellComponentRef, DateCellProps>(function DateCell(
         return mode === CellMode.SELECTED ? (
           <div
             ref={selectedElementRef as RefObject<HTMLDivElement>}
-            className={`${className} px-2 py-1 flex items-center`}
+            className={`${className} px-2 py-1 flex items-center focus:outline-2 focus-visible:outline-2 focus:outline-blue-300`}
             tabIndex={0}
             onFocus={handleFocus}
             onBlur={handleBlur}
