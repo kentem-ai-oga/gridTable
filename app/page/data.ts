@@ -1,0 +1,47 @@
+import { Person } from "./page";
+
+// 初期データ
+export const INITIAL_DATA: Person[] = [
+  {
+    id: 1,
+    name: "John Doe",
+    age: 28,
+    email: "john@example.com",
+    birthDate: "1997-04-10",
+    gender: "male",
+    isActive: true,
+    consentGiven: true,
+    status: "active",
+    lastVisit: "2025-04-15",
+    actions: "view",
+    bloodPressure: { systolic: 120, diastolic: 80, average: 100 },
+  },
+  {
+    id: 2,
+    name: "Jane Smith",
+    age: 34,
+    email: "jane@example.com",
+    birthDate: "1991-07-22",
+    gender: "female",
+    isActive: true,
+    consentGiven: false,
+    status: "pending",
+    lastVisit: "2025-03-22",
+    actions: "edit",
+    bloodPressure: { systolic: 130, diastolic: 85, average: 107.5 },
+  },
+  {
+    id: 3,
+    name: "Sam Johnson",
+    age: 45,
+    email: "sam@example.com",
+    birthDate: "1980-11-15",
+    gender: "male",
+    isActive: false,
+    consentGiven: true,
+    status: "inactive",
+    lastVisit: "2024-12-05",
+    actions: "delete",
+    bloodPressure: { systolic: 140, diastolic: 90, average: 115 },
+  },
+];

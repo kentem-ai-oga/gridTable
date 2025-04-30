@@ -3,35 +3,44 @@
 "use client";
 
 import { useReducer } from "react";
-import GridTable, { Column } from "./_components/grid-table";
-import InputCell from "./_components/grid-table/cell/input-cell";
 import {
+  ButtonCell,
   CellLayout,
+  CheckboxCell,
+  Column,
+  DateCell,
+  GridTable,
+  InputCell,
+  NumberCell,
   STANDARD_CELL_LAYOUT,
-} from "./_components/grid-table/types";
-import { createCellSplit } from "./_components/grid-table/utils";
+  SelectCell,
+  createCellSplit,
+} from "../grid-table/cell";
+import { INITIAL_DATA } from "./data";
+import GridTableDescription from "./description";
 
 // 行データの型定義
-type Person = {
+export type Person = {
   id: number;
   name: string;
   age: number;
   email: string;
   birthDate: string;
   gender: string;
+  isActive: boolean;
+  consentGiven: boolean;
+  status: string;
+  lastVisit: string;
+  actions: string;
   bloodPressure: {
     systolic: number;
     diastolic: number;
     average: number;
   };
-  // 複雑なセル分割の例として健康評価を追加
-  healthAssessment: {
-    physical: number; // 0-100
-    mental: number; // 0-100
-    social: number; // 0-100
-    overall: number; // 0-100
-  };
 };
+
+// GridTableの実装に型は Column<Person> により自動的に定義されるため
+// 個別の型定義は不要
 
 // bloodPressureの型ガード関数
 const isBloodPressure = (value: unknown): value is Person["bloodPressure"] => {
@@ -51,28 +60,6 @@ const isBloodPressure = (value: unknown): value is Person["bloodPressure"] => {
   return true;
 };
 
-// healthAssessmentの型ガード関数
-const isHealthAssessment = (
-  value: unknown,
-): value is Person["healthAssessment"] => {
-  if (typeof value !== "object" || value === null) return false;
-  if (
-    !("physical" in value) ||
-    !("mental" in value) ||
-    !("social" in value) ||
-    !("overall" in value)
-  )
-    return false;
-  if (
-    typeof value.physical !== "number" ||
-    typeof value.mental !== "number" ||
-    typeof value.social !== "number" ||
-    typeof value.overall !== "number"
-  )
-    return false;
-  return true;
-};
-
 // カラム定義
 const columns: Column<Person>[] = [
   {
@@ -81,7 +68,7 @@ const columns: Column<Person>[] = [
     cell: ({ value, onChange, onFocus, onKeyDown, onInitialize }) => {
       if (typeof value !== "number") return null;
       return (
-        <InputCell
+        <NumberCell
           ref={(ref) => {
             if (!ref) return;
             onInitialize?.([
@@ -92,12 +79,9 @@ const columns: Column<Person>[] = [
             ]);
           }}
           className="h-full w-full"
-          type="number"
           value={value}
-          onChange={(newValue) => {
-            const valueAsNumber = Number(newValue);
-            onChange?.(isNaN(valueAsNumber) ? 0 : valueAsNumber);
-          }}
+          onChange={onChange}
+          min={1}
           onFocus={() => onFocus?.(STANDARD_CELL_LAYOUT)}
           onKeyDown={onKeyDown}
         />
@@ -136,7 +120,7 @@ const columns: Column<Person>[] = [
     cell: ({ value, onChange, onFocus, onKeyDown, onInitialize }) => {
       if (typeof value !== "number") return null;
       return (
-        <InputCell
+        <NumberCell
           ref={(ref) => {
             if (!ref) return;
             onInitialize?.([
@@ -147,12 +131,10 @@ const columns: Column<Person>[] = [
             ]);
           }}
           className="h-full w-full"
-          type="number"
           value={value}
-          onChange={(newValue) => {
-            const valueAsNumber = Number(newValue);
-            onChange?.(isNaN(valueAsNumber) ? 0 : valueAsNumber);
-          }}
+          min={0}
+          max={150}
+          onChange={onChange}
           onFocus={() => onFocus?.(STANDARD_CELL_LAYOUT)}
           onKeyDown={onKeyDown}
         />
@@ -179,6 +161,243 @@ const columns: Column<Person>[] = [
           type="email"
           value={value}
           onChange={(newValue) => onChange?.(newValue)}
+          onFocus={() => onFocus?.(STANDARD_CELL_LAYOUT)}
+          onKeyDown={onKeyDown}
+        />
+      );
+    },
+  },
+  {
+    accessorKey: "birthDate",
+    header: () => <span>生年月日</span>,
+    cell: ({ value, onChange, onFocus, onKeyDown, onInitialize }) => {
+      if (typeof value !== "string") return null;
+
+      return (
+        <DateCell
+          ref={(ref) => {
+            if (!ref) return;
+            onInitialize?.([
+              {
+                ...STANDARD_CELL_LAYOUT,
+                focus: () => ref.focus(),
+              },
+            ]);
+          }}
+          className="h-full w-full"
+          value={value}
+          onChange={(newValue: Date | string | null) => {
+            // 日付をISOString形式の文字列として保存
+            const dateValue =
+              newValue instanceof Date
+                ? newValue.toISOString().split("T")[0]
+                : typeof newValue === "string"
+                  ? newValue
+                  : null;
+            onChange?.(dateValue || "");
+          }}
+          onFocus={() => onFocus?.(STANDARD_CELL_LAYOUT)}
+          onKeyDown={onKeyDown}
+          displayFormat="YYYY年MM月DD日"
+        />
+      );
+    },
+  },
+  {
+    accessorKey: "lastVisit",
+    header: () => <span>最終訪問日</span>,
+    cell: ({ value, onChange, onFocus, onKeyDown, onInitialize }) => {
+      if (typeof value !== "string") return null;
+
+      return (
+        <DateCell
+          ref={(ref) => {
+            if (!ref) return;
+            onInitialize?.([
+              {
+                ...STANDARD_CELL_LAYOUT,
+                focus: () => ref.focus(),
+              },
+            ]);
+          }}
+          className="h-full w-full"
+          value={value}
+          onChange={(newValue: Date | string | null) => {
+            const dateValue =
+              newValue instanceof Date
+                ? newValue.toISOString().split("T")[0]
+                : typeof newValue === "string"
+                  ? newValue
+                  : null;
+            onChange?.(dateValue || "");
+          }}
+          onFocus={() => onFocus?.(STANDARD_CELL_LAYOUT)}
+          onKeyDown={onKeyDown}
+          displayFormat="YYYY年MM月DD日"
+        />
+      );
+    },
+  },
+  {
+    accessorKey: "gender",
+    header: () => <span>性別</span>,
+    cell: ({ value, onChange, onFocus, onKeyDown, onInitialize }) => {
+      if (typeof value !== "string") return null;
+
+      const genderOptions = [
+        { value: "male", label: "男性" },
+        { value: "female", label: "女性" },
+        { value: "other", label: "その他" },
+        { value: "prefer_not_to_say", label: "回答しない" },
+      ];
+
+      return (
+        <SelectCell
+          ref={(ref) => {
+            if (!ref) return;
+            onInitialize?.([
+              {
+                ...STANDARD_CELL_LAYOUT,
+                focus: () => ref.focus(),
+              },
+            ]);
+          }}
+          className="h-full w-full"
+          value={value}
+          onChange={(newValue: string) => onChange?.(newValue)}
+          onFocus={() => onFocus?.(STANDARD_CELL_LAYOUT)}
+          onKeyDown={onKeyDown}
+          options={genderOptions}
+          placeholder="性別を選択"
+        />
+      );
+    },
+  },
+  {
+    accessorKey: "status",
+    header: () => <span>状態</span>,
+    cell: ({ value, onChange, onFocus, onKeyDown, onInitialize }) => {
+      if (typeof value !== "string") return null;
+
+      const statusOptions = [
+        { value: "active", label: "有効" },
+        { value: "pending", label: "保留中" },
+        { value: "inactive", label: "無効" },
+        { value: "suspended", label: "停止中" },
+      ];
+
+      return (
+        <SelectCell
+          ref={(ref) => {
+            if (!ref) return;
+            onInitialize?.([
+              {
+                ...STANDARD_CELL_LAYOUT,
+                focus: () => ref.focus(),
+              },
+            ]);
+          }}
+          className="h-full w-full"
+          value={value}
+          onChange={(newValue: string) => onChange?.(newValue)}
+          onFocus={() => onFocus?.(STANDARD_CELL_LAYOUT)}
+          onKeyDown={onKeyDown}
+          options={statusOptions}
+          placeholder="状態を選択"
+        />
+      );
+    },
+  },
+  {
+    accessorKey: "isActive",
+    header: () => <span>有効</span>,
+    cell: ({ value, onChange, onFocus, onKeyDown, onInitialize }) => {
+      if (typeof value !== "boolean") return null;
+
+      return (
+        <CheckboxCell
+          ref={(ref) => {
+            if (!ref) return;
+            onInitialize?.([
+              {
+                ...STANDARD_CELL_LAYOUT,
+                focus: () => ref.focus(),
+              },
+            ]);
+          }}
+          className="h-full w-full flex items-center justify-center"
+          value={value}
+          onChange={(newValue: boolean) => onChange?.(newValue)}
+          onFocus={() => onFocus?.(STANDARD_CELL_LAYOUT)}
+          onKeyDown={onKeyDown}
+        />
+      );
+    },
+  },
+  {
+    accessorKey: "consentGiven",
+    header: () => <span>同意</span>,
+    cell: ({ value, onChange, onFocus, onKeyDown, onInitialize }) => {
+      if (typeof value !== "boolean") return null;
+
+      return (
+        <CheckboxCell
+          ref={(ref) => {
+            if (!ref) return;
+            onInitialize?.([
+              {
+                ...STANDARD_CELL_LAYOUT,
+                focus: () => ref.focus(),
+              },
+            ]);
+          }}
+          className="h-full w-full flex items-center justify-center"
+          value={value}
+          onChange={(newValue: boolean) => onChange?.(newValue)}
+          onFocus={() => onFocus?.(STANDARD_CELL_LAYOUT)}
+          onKeyDown={onKeyDown}
+          label="同意済"
+        />
+      );
+    },
+  },
+  {
+    accessorKey: "actions",
+    header: () => <span>操作</span>,
+    cell: ({ value, onFocus, onKeyDown, onInitialize, rowIndex }) => {
+      if (typeof value !== "string") return null;
+
+      const handleClick = () => {
+        alert(`行 ${rowIndex + 1} のアクションが実行されました！`);
+      };
+
+      let buttonLabel = "表示";
+      let variant: "primary" | "secondary" | "danger" = "primary";
+
+      if (value === "edit") {
+        buttonLabel = "編集";
+        variant = "secondary";
+      } else if (value === "delete") {
+        buttonLabel = "削除";
+        variant = "danger";
+      }
+
+      return (
+        <ButtonCell
+          ref={(ref) => {
+            if (!ref) return;
+            onInitialize?.([
+              {
+                ...STANDARD_CELL_LAYOUT,
+                focus: () => ref.focus(),
+              },
+            ]);
+          }}
+          className="h-full w-full"
+          value={value}
+          label={buttonLabel}
+          variant={variant}
+          onClick={handleClick}
           onFocus={() => onFocus?.(STANDARD_CELL_LAYOUT)}
           onKeyDown={onKeyDown}
         />
@@ -244,7 +463,7 @@ const columns: Column<Person>[] = [
 
       return (
         <div className="grid grid-cols-[1fr_1px_1fr] grid-rows-[1fr_1px_1fr] place-items-center">
-          <InputCell
+          <NumberCell
             ref={(ref) => {
               if (!ref) return;
               cells[0].focus = () => ref.focus();
@@ -252,20 +471,20 @@ const columns: Column<Person>[] = [
               checkAllRefsInitialized();
             }}
             className="row-start-1 col-start-1 p-1 h-full w-full"
-            type="number"
             value={systolic}
+            min={0}
+            max={300}
             onChange={(newValue) => {
-              const valueAsNumber = Number(newValue);
               onChange?.({
                 ...value,
-                systolic: isNaN(valueAsNumber) ? 0 : valueAsNumber,
+                systolic: newValue,
               });
             }}
             onFocus={() => onFocus?.(cells[0].layout)}
             onKeyDown={onKeyDown}
           />
           <div className="row-start-2 col-start-1 border-b border-gray-300 w-full h-full" />
-          <InputCell
+          <NumberCell
             ref={(ref) => {
               if (!ref) return;
               cells[1].focus = () => ref.focus();
@@ -273,20 +492,20 @@ const columns: Column<Person>[] = [
               checkAllRefsInitialized();
             }}
             className="row-start-3 col-start-1 p-1 h-full w-full"
-            type="number"
             value={diastolic}
+            min={0}
+            max={200}
             onChange={(newValue) => {
-              const valueAsNumber = Number(newValue);
               onChange?.({
                 ...value,
-                diastolic: isNaN(valueAsNumber) ? 0 : valueAsNumber,
+                diastolic: newValue,
               });
             }}
             onFocus={() => onFocus?.(cells[1].layout)}
             onKeyDown={onKeyDown}
           />
           <div className="row-start-1 row-span-3 col-start-2 border-r border-gray-300 w-full h-full" />
-          <InputCell
+          <NumberCell
             ref={(ref) => {
               if (!ref) return;
               cells[2].focus = () => ref.focus();
@@ -294,13 +513,13 @@ const columns: Column<Person>[] = [
               checkAllRefsInitialized();
             }}
             className="row-start-1 row-span-3 col-start-3 p-1 h-full w-full"
-            type="number"
             value={average}
+            min={0}
+            max={200}
             onChange={(newValue) => {
-              const valueAsNumber = Number(newValue);
               onChange?.({
                 ...value,
-                average: isNaN(valueAsNumber) ? 0 : valueAsNumber,
+                average: newValue,
               });
             }}
             onFocus={() => onFocus?.(cells[2].layout)}
@@ -312,40 +531,6 @@ const columns: Column<Person>[] = [
   },
 ];
 
-// 初期データ
-const INITIAL_DATA: Person[] = [
-  {
-    id: 1,
-    name: "John Doe",
-    age: 28,
-    email: "john@example.com",
-    birthDate: "1997-04-10",
-    gender: "male",
-    bloodPressure: { systolic: 120, diastolic: 80, average: 100 },
-    healthAssessment: { physical: 85, mental: 90, social: 75, overall: 83 },
-  },
-  {
-    id: 2,
-    name: "Jane Smith",
-    age: 34,
-    email: "jane@example.com",
-    birthDate: "1991-07-22",
-    gender: "female",
-    bloodPressure: { systolic: 130, diastolic: 85, average: 107.5 },
-    healthAssessment: { physical: 92, mental: 88, social: 95, overall: 92 },
-  },
-  {
-    id: 3,
-    name: "Sam Johnson",
-    age: 45,
-    email: "sam@example.com",
-    birthDate: "1980-11-15",
-    gender: "male",
-    bloodPressure: { systolic: 140, diastolic: 90, average: 115 },
-    healthAssessment: { physical: 78, mental: 82, social: 70, overall: 77 },
-  },
-];
-
 // Actionの型（Union型で厳密に型付け）
 type Action =
   | { rowIndex: number; accessorKey: "id"; value: Person["id"] }
@@ -354,15 +539,19 @@ type Action =
   | { rowIndex: number; accessorKey: "email"; value: Person["email"] }
   | { rowIndex: number; accessorKey: "birthDate"; value: Person["birthDate"] }
   | { rowIndex: number; accessorKey: "gender"; value: Person["gender"] }
+  | { rowIndex: number; accessorKey: "isActive"; value: Person["isActive"] }
+  | {
+      rowIndex: number;
+      accessorKey: "consentGiven";
+      value: Person["consentGiven"];
+    }
+  | { rowIndex: number; accessorKey: "status"; value: Person["status"] }
+  | { rowIndex: number; accessorKey: "lastVisit"; value: Person["lastVisit"] }
+  | { rowIndex: number; accessorKey: "actions"; value: Person["actions"] }
   | {
       rowIndex: number;
       accessorKey: "bloodPressure";
       value: Person["bloodPressure"];
-    }
-  | {
-      rowIndex: number;
-      accessorKey: "healthAssessment";
-      value: Person["healthAssessment"];
     };
 
 export default function GridTablePage() {
@@ -380,7 +569,6 @@ export default function GridTablePage() {
       }),
     INITIAL_DATA,
   );
-
   // 変更ハンドラ
   const handleChange = ({
     columnAccessorKey,
@@ -405,7 +593,10 @@ export default function GridTablePage() {
       case "name":
       case "email":
       case "birthDate":
-      case "gender": {
+      case "gender":
+      case "status":
+      case "lastVisit":
+      case "actions": {
         if (typeof value === "string") {
           formDispatch({
             rowIndex,
@@ -425,8 +616,9 @@ export default function GridTablePage() {
         }
         break;
       }
-      case "bloodPressure": {
-        if (isBloodPressure(value)) {
+      case "isActive":
+      case "consentGiven": {
+        if (typeof value === "boolean") {
           formDispatch({
             rowIndex,
             accessorKey: columnAccessorKey,
@@ -435,8 +627,8 @@ export default function GridTablePage() {
         }
         break;
       }
-      case "healthAssessment": {
-        if (isHealthAssessment(value)) {
+      case "bloodPressure": {
+        if (isBloodPressure(value)) {
           formDispatch({
             rowIndex,
             accessorKey: columnAccessorKey,
@@ -451,27 +643,17 @@ export default function GridTablePage() {
   };
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-6">GridTableサンプル</h1>
+    <div className="p-8 bg-gray-50 min-h-screen">
+      <h1 className="text-3xl mb-5 font-bold text-gray-800">作業員名簿</h1>
+
       <GridTable<Person>
         columns={columns}
         data={formState}
         onChange={handleChange}
-        title="人物情報"
-        className="mb-10"
+        className="w-full"
       />
 
-      <div className="mt-8">
-        <h2 className="text-xl font-bold mb-4">機能説明</h2>
-        <ul className="list-disc pl-5 space-y-2">
-          <li>矢印キー: セル間を移動</li>
-          <li>Enter: 下のセルに移動（Shift+Enterで上に移動）</li>
-          <li>Tab: 右のセルに移動（Shift+Tabで左に移動）</li>
-          <li>ダブルクリック: セル編集モード</li>
-          <li>Esc: 編集モードを終了</li>
-          <li>Ctrl+Z / Command+Z: 入力の取り消し</li>
-        </ul>
-      </div>
+      <GridTableDescription />
     </div>
   );
 }

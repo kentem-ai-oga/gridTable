@@ -11,16 +11,27 @@ import {
   useRef,
   useState,
 } from "react";
-import { CellComponentProps, CellComponentRef } from "../types";
+import { CellComponentProps, CellComponentRef, MoveDirection } from "../types";
 
-// BaseCellのレンダープロップスの型定義
+/**
+ * セルの表示モード
+ */
+export enum CellMode {
+  SELECTED = "selected",
+  EDITING = "editing",
+}
+
+/**
+ * BaseCellのレンダープロップスの型定義
+ */
 export interface CellRenderProps<T = unknown> {
-  mode: "selected" | "editing";
+  mode: CellMode;
   isJustFocused: boolean;
   setIsJustFocused: (value: boolean) => void;
-  handleModeChange: (mode: "selected" | "editing") => void;
+  handleModeChange: (mode: CellMode) => void;
   selectedElementRef: RefObject<HTMLElement | null>;
   handleKeyDown: (e: React.KeyboardEvent<HTMLElement>) => void;
+  handleEditingKeyDown: (e: React.KeyboardEvent<HTMLElement>) => void;
   handleFocus: () => void;
   handleBlur: () => void;
   setForUndo: (
@@ -38,15 +49,13 @@ export interface CellRenderProps<T = unknown> {
 export interface BaseCellProps<T = unknown> extends CellComponentProps<T> {
   /**
    * セルの表示モード
-   * - "selected": セルが選択されている状態（デフォルト）
-   * - "editing": セルが編集中の状態
    */
-  defaultMode?: "selected" | "editing";
+  defaultMode?: CellMode;
 
   /**
    * モード変更時のコールバック
    */
-  onModeChange?: (mode: "selected" | "editing") => void;
+  onModeChange?: (mode: CellMode) => void;
 
   /**
    * 子要素のレンダリング関数
@@ -70,6 +79,17 @@ export interface BaseCellRef extends CellComponentRef {
 }
 
 /**
+ * キーボードナビゲーション設定
+ * キーとMoveDirectionのマッピング
+ */
+const keyToDirectionMap: Record<string, MoveDirection> = {
+  ArrowUp: "up",
+  ArrowDown: "down",
+  ArrowLeft: "left",
+  ArrowRight: "right",
+};
+
+/**
  * 基底セルコンポーネント
  * GridTableの各セルタイプの基底となるコンポーネント
  */
@@ -80,19 +100,15 @@ function BaseCellComponent<T = unknown>(
     onChange,
     onFocus,
     onKeyDown,
-    defaultMode = "selected",
+    defaultMode = CellMode.SELECTED,
     onModeChange,
     children,
   }: BaseCellProps<T>,
   ref: ForwardedRef<BaseCellRef>,
 ) {
-  // セルの状態: selected（選択）またはediting（編集中）
-  const [mode, setMode] = useState<"selected" | "editing">(defaultMode);
-
-  // selected状態用のref
+  // セルの状態
+  const [mode, setMode] = useState<CellMode>(defaultMode);
   const selectedElementRef = useRef<HTMLElement | null>(null);
-
-  // セルが選択された直後は文字入力されると元の文字が消えるため、その制御に利用
   const [isJustFocused, setIsJustFocused] = useState(false);
 
   // Undo用の状態
@@ -101,9 +117,9 @@ function BaseCellComponent<T = unknown>(
     isJustFocused: boolean;
   }>();
 
-  // モード変更処理 - useCallbackでメモ化
+  // モード変更処理
   const handleModeChange = useCallback(
-    (newMode: "selected" | "editing") => {
+    (newMode: CellMode) => {
       setMode(newMode);
       onModeChange?.(newMode);
     },
@@ -117,68 +133,92 @@ function BaseCellComponent<T = unknown>(
       focus: () => {
         selectedElementRef.current?.focus();
       },
-      startEditing: () => handleModeChange("editing"),
-      stopEditing: () => handleModeChange("selected"),
+      startEditing: () => handleModeChange(CellMode.EDITING),
+      stopEditing: () => handleModeChange(CellMode.SELECTED),
     }),
     [handleModeChange],
-  );
-
-  /**
-   * キーボードイベントの共通ハンドラ
+  ); /**
+   * 選択モード時のキーボードイベントハンドラ
    */
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLElement>) => {
+      // F2キー処理（編集モードに切り替え）
+      if (e.key === "F2") {
+        e.preventDefault();
+        handleModeChange(CellMode.EDITING);
+        return;
+      }
+
+      // 方向キー処理
+      if (keyToDirectionMap[e.key]) {
+        e.preventDefault();
+        onKeyDown?.(keyToDirectionMap[e.key]);
+        return;
+      }
+
+      // Enterキー処理（上下移動）
+      if (e.key === "Enter") {
+        e.preventDefault();
+        onKeyDown?.(e.shiftKey ? "up" : "down");
+        return;
+      }
+
+      // Tabキー処理（左右移動）
+      if (e.key === "Tab") {
+        e.preventDefault();
+        onKeyDown?.(e.shiftKey ? "left" : "right");
+        return;
+      }
+
+      // Delete/Backspace処理
+      if ((e.key === "Delete" || e.key === "Backspace") && isJustFocused) {
+        e.preventDefault();
+        setForUndo({ value, isJustFocused });
+        onChange?.("" as unknown as T);
+        return;
+      }
+
+      // Undo操作 (Ctrl+Z または Command+Z)
+      if (
+        e.key === "z" &&
+        (e.ctrlKey || e.metaKey) &&
+        forUndo?.value !== undefined
+      ) {
+        e.preventDefault();
+        onChange?.(forUndo.value);
+        setIsJustFocused(forUndo.isJustFocused);
+        setForUndo({ value, isJustFocused });
+      }
+    },
+    [forUndo, handleModeChange, isJustFocused, onChange, onKeyDown, value],
+  );
+
+  /**
+   * 編集モード時のキーボードイベントハンドラ
+   */
+  const handleEditingKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLElement>) => {
       switch (e.key) {
-        case "ArrowUp":
-          e.preventDefault();
-          onKeyDown?.("up");
-          break;
-        case "ArrowDown":
-          e.preventDefault();
-          onKeyDown?.("down");
-          break;
-        case "ArrowLeft":
-          e.preventDefault();
-          onKeyDown?.("left");
-          break;
-        case "ArrowRight":
-          e.preventDefault();
-          onKeyDown?.("right");
-          break;
         case "Enter": {
           e.preventDefault();
+          handleModeChange(CellMode.SELECTED);
           if (e.shiftKey) onKeyDown?.("up");
           else onKeyDown?.("down");
           break;
         }
         case "Tab":
           e.preventDefault();
+          handleModeChange(CellMode.SELECTED);
           if (e.shiftKey) onKeyDown?.("left");
           else onKeyDown?.("right");
           break;
-        case "Delete":
-        case "Backspace":
-          if (isJustFocused) {
-            e.preventDefault();
-            setForUndo({ value, isJustFocused });
-            onChange?.("" as unknown as T);
-          }
+        case "Escape":
+          e.preventDefault();
+          handleModeChange(CellMode.SELECTED);
           break;
       }
-
-      // Undo操作 (Ctrl+Z または Command+Z)
-      if (e.key === "z" && (e.ctrlKey || e.metaKey)) {
-        if (forUndo?.value === undefined) return;
-        e.preventDefault();
-        onChange?.(forUndo.value);
-        setIsJustFocused(forUndo.isJustFocused);
-        setForUndo({
-          value,
-          isJustFocused,
-        });
-      }
     },
-    [forUndo, isJustFocused, onChange, onKeyDown, value],
+    [handleModeChange, onKeyDown],
   );
 
   /**
@@ -186,9 +226,7 @@ function BaseCellComponent<T = unknown>(
    */
   const handleFocus = useCallback(() => {
     setIsJustFocused(true);
-    if (onFocus) {
-      onFocus();
-    }
+    onFocus?.();
   }, [onFocus]);
 
   /**
@@ -210,6 +248,7 @@ function BaseCellComponent<T = unknown>(
         handleModeChange,
         selectedElementRef,
         handleKeyDown,
+        handleEditingKeyDown,
         handleFocus,
         handleBlur,
         setForUndo,

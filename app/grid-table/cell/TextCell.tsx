@@ -1,15 +1,20 @@
-// filepath: c:\Users\ai-oga\Documents\cloud-workledger\code\gridtable\app\grid-table-page\_components\grid-table\cell\input-cell.tsx
-// GridTableで最も一般的に使われる入力セル
-
 "use client";
 
-import { ComponentProps, ForwardedRef, forwardRef, useRef } from "react";
+import {
+  ChangeEvent,
+  ComponentProps,
+  ForwardedRef,
+  forwardRef,
+  RefObject,
+  useRef,
+} from "react";
 import { CellComponentRef } from "../types";
 import BaseCell, {
   BaseCellProps,
   BaseCellRef,
+  CellMode,
   CellRenderProps,
-} from "./base-cell";
+} from "./BaseCell";
 
 /**
  * InputCellのProps
@@ -68,6 +73,7 @@ const InputCell = forwardRef<CellComponentRef, InputCellProps>(
             handleModeChange,
             selectedElementRef,
             handleKeyDown,
+            handleEditingKeyDown,
             handleFocus,
             handleBlur,
             setForUndo,
@@ -79,9 +85,7 @@ const InputCell = forwardRef<CellComponentRef, InputCellProps>(
           /**
            * 選択状態での値変更
            */
-          const handleSelectedChange = (
-            e: React.ChangeEvent<HTMLInputElement>,
-          ) => {
+          const handleSelectedChange = (e: ChangeEvent<HTMLInputElement>) => {
             if (isJustFocused) {
               setIsJustFocused(false);
               setForUndo({ value, isJustFocused });
@@ -94,15 +98,13 @@ const InputCell = forwardRef<CellComponentRef, InputCellProps>(
           /**
            * 編集状態での値変更
            */
-          const handleEditingChange = (
-            e: React.ChangeEvent<HTMLInputElement>,
-          ) => {
+          const handleEditingChange = (e: ChangeEvent<HTMLInputElement>) => {
             onChange?.(e.target.value);
           };
 
-          return mode === "selected" ? (
+          return mode === CellMode.SELECTED ? (
             <input
-              ref={selectedElementRef as React.RefObject<HTMLInputElement>}
+              ref={selectedElementRef as RefObject<HTMLInputElement>}
               // Excelに寄せるため、キャレット(カーソル)を透明にしている
               className={`${className} focus:outline-2 focus-visible:outline-2 focus:outline-blue-300 caret-transparent`}
               value={value}
@@ -111,7 +113,7 @@ const InputCell = forwardRef<CellComponentRef, InputCellProps>(
               onSelect={(e) => handleSelect(e.currentTarget)}
               onFocus={handleFocus}
               onBlur={handleBlur}
-              onDoubleClick={() => handleModeChange("editing")}
+              onDoubleClick={() => handleModeChange(CellMode.EDITING)}
               onKeyDown={handleKeyDown}
             />
           ) : (
@@ -123,28 +125,10 @@ const InputCell = forwardRef<CellComponentRef, InputCellProps>(
               onChange={handleEditingChange}
               onFocus={onFocus}
               onBlur={() => {
-                handleModeChange("selected");
+                handleModeChange(CellMode.SELECTED);
                 setForUndo(undefined);
               }}
-              onKeyDown={(e) => {
-                switch (e.key) {
-                  case "Enter": {
-                    e.preventDefault();
-                    if (e.shiftKey) onKeyDown?.("up");
-                    else onKeyDown?.("down");
-                    break;
-                  }
-                  case "Tab":
-                    e.preventDefault();
-                    if (e.shiftKey) onKeyDown?.("left");
-                    else onKeyDown?.("right");
-                    break;
-                  case "Escape":
-                    e.preventDefault();
-                    handleModeChange("selected");
-                    break;
-                }
-              }}
+              onKeyDown={handleEditingKeyDown}
             />
           );
         }}

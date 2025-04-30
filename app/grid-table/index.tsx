@@ -1,26 +1,23 @@
-// GridTable本体
+"use client";
 
-import { ReactNode, useCallback, useRef } from "react";
-import { Cell, CellLayout, MoveDirection, RowData } from "./types";
+import { ReactElement, ReactNode, useCallback, useRef } from "react";
+import { Cell, CellLayout, MoveDirection, RowData, StringKeyOf } from "./types";
 
 /**
  * カラム定義の型
  * T: 行データの型
  */
 export type Column<T extends RowData> = {
-  /** データのキー */
-  accessorKey: keyof T & string;
-  /** ヘッダーのレンダリング関数 */
+  accessorKey: StringKeyOf<T>;
   header: (props: {
-    columnAccessorKey: keyof T & string;
+    columnAccessorKey: StringKeyOf<T>;
     callbackFn?: (value: unknown) => void;
   }) => ReactNode;
-  /** セルのレンダリング関数 */
   cell: (props: {
     rowIndex: number;
-    columnAccessorKey: keyof T & string;
-    value: T[keyof T];
-    onChange?: (value: T[keyof T]) => void;
+    columnAccessorKey: StringKeyOf<T>;
+    value: T[StringKeyOf<T>];
+    onChange?: (value: T[StringKeyOf<T>]) => void;
     onFocus?: (cellLayout: CellLayout) => void;
     onInitialize?: (subCells: Cell[]) => void;
     onKeyDown?: (direction: MoveDirection) => void;
@@ -35,9 +32,9 @@ export type GridTableProps<T extends RowData> = {
   columns: Column<T>[];
   data: T[];
   onChange: (params: {
-    columnAccessorKey: keyof T & string;
+    columnAccessorKey: StringKeyOf<T>;
     rowIndex: number;
-    value: T[keyof T];
+    value: T[StringKeyOf<T>];
   }) => void;
   className?: string;
   tableClassName?: string;
@@ -46,14 +43,13 @@ export type GridTableProps<T extends RowData> = {
   rowClassName?: string;
   cellClassName?: string;
   headerCellClassName?: string;
-  title?: string;
 };
 
 /**
  * GridTableコンポーネント
  * Excelのようなセル移動と編集が可能なテーブルコンポーネント
  */
-export default function GridTable<T extends RowData>({
+const GridTable = <T extends RowData>({
   columns,
   data,
   onChange,
@@ -64,8 +60,7 @@ export default function GridTable<T extends RowData>({
   rowClassName = "border-b border-gray-300 h-full",
   cellClassName = "border border-gray-300 h-full",
   headerCellClassName = "border border-gray-300 h-full",
-  title = "Grid Table",
-}: GridTableProps<T>) {
+}: GridTableProps<T>): ReactElement => {
   // フォーカス可能なすべてのセルを格納するref
   const cellsRef = useRef<Cell[]>([]);
 
@@ -76,46 +71,52 @@ export default function GridTable<T extends RowData>({
    * セルをセルリストに追加する
    */
   const registerCell = useCallback((cell: Cell) => {
-    cellsRef.current.push(cell);
+    // 重複チェック
+    const exists = cellsRef.current.some(
+      (existingCell) =>
+        existingCell.topRow === cell.topRow &&
+        existingCell.leftColumn === cell.leftColumn &&
+        existingCell.bottomRow === cell.bottomRow &&
+        existingCell.rightColumn === cell.rightColumn,
+    );
+    if (!exists) {
+      cellsRef.current.push(cell);
+    }
   }, []);
+
   /**
-   * 特定のセルにフォーカスを当てる
+   * 特定のセルにフォーカスが当たった際に、内部状態を更新する
    */
   const focusCell = useCallback((cellToFocus: CellLayout) => {
     const targetCell = cellsRef.current.find((cell) => {
+      // 浮動小数点数の比較には許容誤差を設ける
+      const tolerance = 0.001;
       return (
-        cell.topRow === cellToFocus.topRow &&
-        cell.leftColumn === cellToFocus.leftColumn &&
-        cell.bottomRow === cellToFocus.bottomRow &&
-        cell.rightColumn === cellToFocus.rightColumn
+        Math.abs(cell.topRow - cellToFocus.topRow) < tolerance &&
+        Math.abs(cell.leftColumn - cellToFocus.leftColumn) < tolerance &&
+        Math.abs(cell.bottomRow - cellToFocus.bottomRow) < tolerance &&
+        Math.abs(cell.rightColumn - cellToFocus.rightColumn) < tolerance
       );
     });
 
     if (targetCell) {
       // フォーカスされたセルの参照を更新
       focusedCellRef.current = targetCell;
-      // console.log("フォーカスセル更新:", targetCell); // デバッグ用
     }
   }, []);
+
   /**
-   * 指定した方向に移動する
+   * 指定した方向に移動し、次のセルにフォーカスする
    */
   const moveToCell = useCallback((direction: MoveDirection) => {
     if (!focusedCellRef.current) {
-      //console.log("移動元セルがありません", direction); // デバッグ用
       return;
     }
-
     const currentCell = focusedCellRef.current;
     // 現在のセルの中心座標を計算
     const currentMiddleRow = (currentCell.topRow + currentCell.bottomRow) / 2;
     const currentMiddleColumn =
       (currentCell.leftColumn + currentCell.rightColumn) / 2;
-
-    // デバッグ情報
-    //console.log("移動処理開始:", direction);
-    //console.log("現在のセル:", currentCell);
-    //console.log("セル総数:", cellsRef.current.length);
 
     // 移動方向に応じて次のセルを見つける
     const nextCell = cellsRef.current.find((cell) => {
@@ -162,37 +163,30 @@ export default function GridTable<T extends RowData>({
           break;
       }
 
-      /*if (isMatch) {
-        console.log("次のセル見つかりました:", cell);
-      }*/
-
       return isMatch;
     });
 
     if (nextCell) {
-      //console.log("移動先セル:", nextCell);
       // フォーカス移動
       focusedCellRef.current = nextCell;
       nextCell.focus();
-    } else {
-      //console.log("移動先のセルが見つかりません", direction);
     }
   }, []);
 
   return (
     <div className={className}>
-      {title && <h1 className="text-2xl font-bold mb-4">{title}</h1>}
       <table className={tableClassName}>
         <thead className={headerClassName}>
           <tr className={rowClassName}>
-            {columns.map((column) => (
+            {columns.map((column, index) => (
               <th
-                key={String(column.accessorKey)}
+                key={`${String(column.accessorKey)}-${index}`} // より安全なキー
                 className={headerCellClassName}
               >
-                {column.header({
-                  columnAccessorKey: column.accessorKey,
-                })}
+                {/* column.headerが関数なら実行、そうでなければそのまま表示 */}
+                {typeof column.header === "function"
+                  ? column.header({ columnAccessorKey: column.accessorKey })
+                  : column.header}
               </th>
             ))}
           </tr>
@@ -201,38 +195,62 @@ export default function GridTable<T extends RowData>({
           {data.map((row, rowIndex) => (
             <tr key={rowIndex} className={rowClassName}>
               {columns.map((column, columnIndex) => (
-                <td key={String(column.accessorKey)} className={cellClassName}>
-                  {column.cell({
-                    rowIndex,
-                    columnAccessorKey: column.accessorKey,
-                    value: row[column.accessorKey],
-                    onChange: (value) =>
-                      onChange({
-                        columnAccessorKey: column.accessorKey,
-                        rowIndex,
-                        value,
-                      }),
-                    onFocus: (cellLayout) => {
-                      focusCell({
-                        topRow: rowIndex + cellLayout.topRow,
-                        leftColumn: columnIndex + cellLayout.leftColumn,
-                        bottomRow: rowIndex + cellLayout.bottomRow,
-                        rightColumn: columnIndex + cellLayout.rightColumn,
-                      });
-                    },
-                    onKeyDown: moveToCell,
-                    onInitialize: (subCells) => {
-                      subCells.forEach((subCell) => {
-                        registerCell({
-                          topRow: rowIndex + subCell.topRow,
-                          leftColumn: columnIndex + subCell.leftColumn,
-                          bottomRow: rowIndex + subCell.bottomRow,
-                          rightColumn: columnIndex + subCell.rightColumn,
-                          focus: subCell.focus,
+                <td
+                  key={`${String(column.accessorKey)}-${columnIndex}`} // より安全なキー
+                  className={cellClassName}
+                >
+                  {/* column.cellが関数なら実行 */}
+                  {typeof column.cell === "function" &&
+                    column.cell({
+                      rowIndex,
+                      columnAccessorKey: column.accessorKey,
+                      value: row[column.accessorKey],
+                      onChange: (value) =>
+                        onChange({
+                          columnAccessorKey: column.accessorKey,
+                          rowIndex,
+                          value,
+                        }),
+                      onFocus: (cellLayout) => {
+                        // テーブル全体での絶対座標に変換して focusCell を呼ぶ
+                        const absoluteLayout = {
+                          topRow: rowIndex + cellLayout.topRow,
+                          leftColumn: columnIndex + cellLayout.leftColumn,
+                          bottomRow: rowIndex + cellLayout.bottomRow,
+                          rightColumn: columnIndex + cellLayout.rightColumn,
+                        };
+                        focusCell(absoluteLayout);
+                      },
+                      onKeyDown: moveToCell,
+                      onInitialize: (subCells) => {
+                        // テーブル全体での絶対座標に変換して registerCell を呼ぶ
+                        subCells.forEach((subCell) => {
+                          // subCellにfocusメソッドがあることを確認
+                          if (typeof subCell.focus === "function") {
+                            registerCell({
+                              topRow: rowIndex + subCell.topRow,
+                              leftColumn: columnIndex + subCell.leftColumn,
+                              bottomRow: rowIndex + subCell.bottomRow,
+                              rightColumn: columnIndex + subCell.rightColumn,
+                              focus: subCell.focus,
+                            });
+                          } else {
+                            console.warn(
+                              "Cell registered without a focus method:",
+                              subCell,
+                            );
+                            // focusがない場合の代替処理 (例: 何もしない関数を登録)
+                            registerCell({
+                              topRow: rowIndex + subCell.topRow,
+                              leftColumn: columnIndex + subCell.leftColumn,
+                              bottomRow: rowIndex + subCell.bottomRow,
+                              rightColumn: columnIndex + subCell.rightColumn,
+                              focus: () => {},
+                            });
+                          }
                         });
-                      });
-                    },
-                  })}
+                      },
+                    })}
                 </td>
               ))}
             </tr>
@@ -241,4 +259,6 @@ export default function GridTable<T extends RowData>({
       </table>
     </div>
   );
-}
+};
+
+export default GridTable;
