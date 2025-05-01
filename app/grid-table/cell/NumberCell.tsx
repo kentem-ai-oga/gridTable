@@ -55,14 +55,16 @@ const NumberCell = forwardRef<CellComponentRef, NumberCellProps>(
     ref: ForwardedRef<CellComponentRef>,
   ) {
     // editing状態用のinputのref
-    const editingInputRef = useRef<HTMLInputElement>(null);
-
-    /**
+    const editingInputRef = useRef<HTMLInputElement>(null); /**
      * カーソル位置をテキストの最後に移動
+     * type="number"の場合はsetSelectionRangeが利用できないため何もしない
      */
     const handleSelect = (input: HTMLInputElement) => {
-      const length = String(input.value).length;
-      input.setSelectionRange(length, length);
+      // type="number"の場合はsetSelectionRangeを実行しない
+      if (input.type !== "number") {
+        const length = String(input.value).length;
+        input.setSelectionRange(length, length);
+      }
     };
 
     /**
@@ -145,10 +147,9 @@ const NumberCell = forwardRef<CellComponentRef, NumberCellProps>(
               className={`${className} focus:outline-2 focus-visible:outline-2 focus:outline-blue-300 caret-transparent text-right`}
               value={value}
               onChange={handleSelectedChange}
-              type="number"
-              min={min}
-              max={max}
-              step={step}
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               // セルのどこをクリックしてもフォーカスが必ず最後に当たるようにしている
               onSelect={(e) => handleSelect(e.currentTarget)}
               onFocus={handleFocus}
@@ -160,10 +161,9 @@ const NumberCell = forwardRef<CellComponentRef, NumberCellProps>(
             <input
               ref={editingInputRef}
               className={`${className} focus:outline-2 focus-visible:outline-2 text-right`}
-              type="number"
-              min={min}
-              max={max}
-              step={step}
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               value={isNaN(value) ? "" : value}
               onChange={handleEditingChange}
               onFocus={onFocus}

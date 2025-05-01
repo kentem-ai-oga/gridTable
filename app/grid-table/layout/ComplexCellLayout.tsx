@@ -131,10 +131,7 @@ export const generateCellPositionClasses = (position: CellPosition): string => {
   // 区切り線を考慮した実際のスパンを計算
   const actualRowSpan = rowSpan * 2 - 1;
   const actualColSpan = columnSpan * 2 - 1;
-
-  return `row-start-${actualRowStart} col-start-${actualColStart} ${
-    rowSpan > 1 ? `row-span-${actualRowSpan}` : ""
-  } ${columnSpan > 1 ? `col-span-${actualColSpan}` : ""}`;
+  return `row-start-${actualRowStart} col-start-${actualColStart} row-span-${actualRowSpan} col-span-${actualColSpan}`;
 };
 
 /**

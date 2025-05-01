@@ -420,6 +420,7 @@ const columns: Column<Person>[] = [
           rowStart: 0,
           columnStart: 1,
           rowSpan: 2,
+          columnSpan: 1,
           content: "血圧平均",
           className: "p-1",
         },
@@ -526,6 +527,7 @@ const columns: Column<Person>[] = [
           rowStart: 0,
           columnStart: 1,
           rowSpan: 2,
+          columnSpan: 1,
           content: (
             <NumberCell
               ref={(ref) => {
