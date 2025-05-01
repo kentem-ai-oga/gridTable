@@ -55,40 +55,35 @@ const formatDate = (
 ): string => {
   if (!date) return "";
 
-  try {
-    const dateObj = typeof date === "string" ? new Date(date) : date;
+  const dateObj = typeof date === "string" ? new Date(date) : date;
 
-    if (!(dateObj instanceof Date) || isNaN(dateObj.getTime())) {
-      return "";
-    }
-
-    // 日付部分のフォーマット
-    const year = dateObj.getFullYear();
-    const month = String(dateObj.getMonth() + 1).padStart(2, "0");
-    const day = String(dateObj.getDate()).padStart(2, "0");
-
-    let result = format
-      .replace("YYYY", String(year))
-      .replace("MM", month)
-      .replace("DD", day);
-
-    // 時間部分のフォーマット（オプション）
-    if (includeTime) {
-      const hours = String(dateObj.getHours()).padStart(2, "0");
-      const minutes = String(dateObj.getMinutes()).padStart(2, "0");
-      const seconds = String(dateObj.getSeconds()).padStart(2, "0");
-
-      result = result
-        .replace("HH", hours)
-        .replace("mm", minutes)
-        .replace("ss", seconds);
-    }
-
-    return result;
-  } catch (error) {
-    console.error("Date formatting error:", error);
+  if (!(dateObj instanceof Date) || isNaN(dateObj.getTime())) {
     return "";
   }
+
+  // 日付部分のフォーマット
+  const year = dateObj.getFullYear();
+  const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+  const day = String(dateObj.getDate()).padStart(2, "0");
+
+  let result = format
+    .replace("YYYY", String(year))
+    .replace("MM", month)
+    .replace("DD", day);
+
+  // 時間部分のフォーマット（オプション）
+  if (includeTime) {
+    const hours = String(dateObj.getHours()).padStart(2, "0");
+    const minutes = String(dateObj.getMinutes()).padStart(2, "0");
+    const seconds = String(dateObj.getSeconds()).padStart(2, "0");
+
+    result = result
+      .replace("HH", hours)
+      .replace("mm", minutes)
+      .replace("ss", seconds);
+  }
+
+  return result;
 };
 
 /**
@@ -131,28 +126,23 @@ const DateCell = forwardRef<CellComponentRef, DateCellProps>(function DateCell(
   const formatDateForInput = (date: Date | string | null): string => {
     if (!date) return "";
 
-    try {
-      const dateObj = typeof date === "string" ? new Date(date) : date;
+    const dateObj = typeof date === "string" ? new Date(date) : date;
 
-      if (!(dateObj instanceof Date) || isNaN(dateObj.getTime())) {
-        return "";
-      }
-
-      const year = dateObj.getFullYear();
-      const month = String(dateObj.getMonth() + 1).padStart(2, "0");
-      const day = String(dateObj.getDate()).padStart(2, "0");
-      const hours = String(dateObj.getHours()).padStart(2, "0");
-      const minutes = String(dateObj.getMinutes()).padStart(2, "0");
-
-      if (includeTime) {
-        return `${year}-${month}-${day}T${hours}:${minutes}`;
-      }
-
-      return `${year}-${month}-${day}`;
-    } catch (error) {
-      console.error("Date formatting error:", error);
+    if (!(dateObj instanceof Date) || isNaN(dateObj.getTime())) {
       return "";
     }
+
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+    const day = String(dateObj.getDate()).padStart(2, "0");
+    const hours = String(dateObj.getHours()).padStart(2, "0");
+    const minutes = String(dateObj.getMinutes()).padStart(2, "0");
+
+    if (includeTime) {
+      return `${year}-${month}-${day}T${hours}:${minutes}`;
+    }
+
+    return `${year}-${month}-${day}`;
   }; // 入力用の文字列を生成
   const inputString = formatDateForInput(value);
 

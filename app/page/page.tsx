@@ -406,23 +406,37 @@ const columns: Column<Person>[] = [
   {
     accessorKey: "bloodPressure",
     header: () => {
-      // 新しいComplexCellLayoutを使用してヘッダーを定義
+      // 血圧セルのヘッダー定義
       const structure = {
         rows: 2,
-        columns: 2,
+        columns: 3, // 3列のグリッド
+        columnSizes: ["1fr", "1fr", "1fr"],
         dividerSize: 1,
       };
 
       const headerCells = [
-        { rowStart: 0, columnStart: 0, content: "血圧上", className: "p-1" },
-        { rowStart: 1, columnStart: 0, content: "血圧下", className: "p-1" },
+        // 血圧上
+        {
+          rowStart: 0,
+          columnStart: 0,
+          content: "血圧上",
+          className: "p-1",
+        },
+        // 血圧下
+        {
+          rowStart: 1,
+          columnStart: 0,
+          content: "血圧下",
+          className: "p-1",
+        },
+        // 血圧平均 (2列分の幅を使用)
         {
           rowStart: 0,
           columnStart: 1,
           rowSpan: 2,
-          columnSpan: 1,
+          columnSpan: 2,
           content: "血圧平均",
-          className: "p-1",
+          className: "p-1 flex items-center justify-center",
         },
       ];
 
@@ -435,32 +449,34 @@ const columns: Column<Person>[] = [
       );
     },
     cell: ({ value, onChange, onFocus, onKeyDown, onInitialize }) => {
+      // 値が血圧データでない場合は何も表示しない
       if (!isBloodPressure(value)) return null;
+
       const { systolic, diastolic, average } = value;
 
-      // 基本的なセルレイアウト構造を定義
+      // セルのグリッド構造定義
       const structure = {
         rows: 2,
-        columns: 2,
+        columns: 3,
+        columnSizes: ["1fr", "1fr", "1fr"],
         dividerSize: 1,
       };
-
-      // セルレイアウト定義
+      // レイアウト定義 (フォーカスナビゲーション用)
+      // セルのレイアウト位置と一致させる
       const cellLayouts = [
-        { topRow: 0, leftColumn: 0, bottomRow: 0.5, rightColumn: 0.5 },
-        { topRow: 0.5, leftColumn: 0, bottomRow: 1, rightColumn: 0.5 },
-        { topRow: 0, leftColumn: 0.5, bottomRow: 1, rightColumn: 1 },
+        { topRow: 0, leftColumn: 0, bottomRow: 0.5, rightColumn: 0.5 }, // 血圧上
+        { topRow: 0.5, leftColumn: 0, bottomRow: 1, rightColumn: 0.5 }, // 血圧下
+        { topRow: 0, leftColumn: 0.5, bottomRow: 1, rightColumn: 1 }, // 血圧平均
       ];
 
-      // フォーカス関数の格納場所
+      // フォーカス管理用の参照
       type RefHolder = { focus: () => void };
       const focusRefs: Array<RefHolder | null> = [null, null, null];
-
-      // すべてのセルのref設定が完了したかをトラッキングする
       const refsInitialized = [false, false, false];
+
+      // すべての参照が初期化されたかチェック
       const checkAllRefsInitialized = () => {
         if (refsInitialized.every((initialized) => initialized)) {
-          // すべてのrefが初期化されたらonInitialize呼び出し
           const cells = cellLayouts.map((layout, i) => ({
             ...layout,
             focus: () => focusRefs[i]?.focus(),
@@ -469,8 +485,9 @@ const columns: Column<Person>[] = [
         }
       };
 
-      // CellDefinition配列を作成（実際の入力要素）
+      // 実際のセル要素を定義
       const cellDefinitions = [
+        // 血圧上
         {
           rowStart: 0,
           columnStart: 0,
@@ -497,6 +514,7 @@ const columns: Column<Person>[] = [
             />
           ),
         },
+        // 血圧下
         {
           rowStart: 1,
           columnStart: 0,
@@ -523,11 +541,12 @@ const columns: Column<Person>[] = [
             />
           ),
         },
+        // 血圧平均
         {
           rowStart: 0,
           columnStart: 1,
           rowSpan: 2,
-          columnSpan: 1,
+          columnSpan: 2,
           content: (
             <NumberCell
               ref={(ref) => {

@@ -235,10 +235,6 @@ const GridTable = <T extends RowData>({
                               focus: subCell.focus,
                             });
                           } else {
-                            console.warn(
-                              "Cell registered without a focus method:",
-                              subCell,
-                            );
                             // focusがない場合の代替処理 (例: 何もしない関数を登録)
                             registerCell({
                               topRow: rowIndex + subCell.topRow,
