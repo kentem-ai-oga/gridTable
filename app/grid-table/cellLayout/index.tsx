@@ -1,10 +1,10 @@
 import { ReactNode } from "react";
 
 /**
- * セルグリッドの構造を定義するインターフェース
- * 行と列の数、およびそれらの相対サイズを指定します
+ * セルグリッドの構造を定義
+ * 行と列の数、およびそれらの相対サイズを指定
  */
-export interface GridStructure {
+export type GridStructure = {
   /** 行の数（区切り線を含まない） */
   rows: number;
   /** 列の数（区切り線を含まない） */
@@ -15,12 +15,12 @@ export interface GridStructure {
   columnSizes?: string[];
   /** 区切り線のサイズ (px単位、省略可) */
   dividerSize?: number;
-}
+};
 
 /**
- * グリッド内のセルの位置と範囲を定義するインターフェース
+ * グリッド内のセルの位置と範囲を定義
  */
-export interface CellPosition {
+export type CellPosition = {
   /** 開始行 (0ベース) */
   rowStart: number;
   /** 開始列 (0ベース) */
@@ -29,22 +29,22 @@ export interface CellPosition {
   rowSpan?: number;
   /** 列方向の範囲 */
   columnSpan?: number;
-}
+};
 
 /**
  * グリッド内のセル定義
  */
-export interface CellDefinition extends CellPosition {
+export type CellDefinition = CellPosition & {
   /** セルの内容 */
   content: ReactNode;
   /** セル固有のクラス名 */
   className?: string;
-}
+};
 
 /**
- * 区切り線の位置と方向を定義するインターフェース
+ * 区切り線の位置と方向を定義
  */
-export interface Divider {
+export type Divider = {
   /** 開始行 (0ベース) */
   rowStart: number;
   /** 開始列 (0ベース) */
@@ -55,10 +55,10 @@ export interface Divider {
   span?: number;
   /** 区切り線固有のクラス名 */
   className?: string;
-}
+};
 
 /**
- * グリッド内の区切り線の配置を生成します
+ * グリッド内の区切り線の配置を生成
  */
 export const generateDividers = (structure: GridStructure): Divider[] => {
   const { rows, columns } = structure;
@@ -164,7 +164,7 @@ export const generateDividerClasses = (divider: Divider): string => {
   return `row-start-${actualRowStart} col-start-${actualColStart} ${spanClass} ${borderClass} border-gray-300 w-full h-full`;
 };
 
-interface ComplexCellLayoutProps {
+type ComplexCellLayoutProps = {
   /** グリッドの構造定義 */
   structure: GridStructure;
   /** セルの定義配列 */
@@ -173,7 +173,7 @@ interface ComplexCellLayoutProps {
   customDividers?: Divider[];
   /** コンポーネントのルートに適用する追加クラス */
   className?: string;
-}
+};
 
 /**
  * 複雑なセルレイアウトを簡潔に定義するためのコンポーネント

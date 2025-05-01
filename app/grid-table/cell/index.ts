@@ -17,7 +17,7 @@ export type {
 export { createCellGrid, createCellSplit } from "../utils";
 
 // 高度なレイアウトコンポーネントのエクスポート
-export * from "../layout";
+export * from "../cellLayout";
 
 // グリッドテーブル本体
 export { default as GridTable, default } from "..";

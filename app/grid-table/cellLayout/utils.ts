@@ -1,25 +1,31 @@
+import { CellDefinition, CellPosition, GridStructure } from ".";
 import { CellLayout } from "../types";
-import {
-  CellDefinition,
-  CellPosition,
-  GridStructure,
-} from "./ComplexCellLayout";
 
 /**
  * 既存のCellLayoutを新しいCellPosition形式に変換する
+ *
+ * @param layout - 変換するCellLayout（小数点座標系 0～1）
+ * @param gridDivisions - グリッド分割数（デフォルト: 12）
+ * @returns 整数ベースのCellPosition
  */
 export const convertCellLayoutToPosition = (
   layout: CellLayout,
+  gridDivisions: number = 12,
 ): CellPosition => {
   // CellLayoutはfractional coordinates (0～1)で定義されている
   // CellPositionは整数ベース (0, 1, 2...)で定義されているため変換が必要
 
-  // 注: この関数は簡略化された変換で、実際の使用には正規化が必要な場合があります
+  // グリッド分割数に基づいて正確に変換
+  const rowStart = Math.round(layout.topRow * gridDivisions);
+  const columnStart = Math.round(layout.leftColumn * gridDivisions);
+  const rowEnd = Math.round(layout.bottomRow * gridDivisions);
+  const columnEnd = Math.round(layout.rightColumn * gridDivisions);
+
   return {
-    rowStart: Math.floor(layout.topRow * 100),
-    columnStart: Math.floor(layout.leftColumn * 100),
-    rowSpan: Math.ceil((layout.bottomRow - layout.topRow) * 100),
-    columnSpan: Math.ceil((layout.rightColumn - layout.leftColumn) * 100),
+    rowStart,
+    columnStart,
+    rowSpan: Math.max(1, rowEnd - rowStart), // 最小1セル保証
+    columnSpan: Math.max(1, columnEnd - columnStart), // 最小1セル保証
   };
 };
 
