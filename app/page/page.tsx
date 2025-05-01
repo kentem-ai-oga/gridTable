@@ -5,16 +5,15 @@
 import { useReducer } from "react";
 import {
   ButtonCell,
-  CellLayout,
   CheckboxCell,
   Column,
+  ComplexCellLayout,
   DateCell,
   GridTable,
   InputCell,
   NumberCell,
   STANDARD_CELL_LAYOUT,
   SelectCell,
-  createCellSplit,
 } from "../grid-table/cell";
 import { INITIAL_DATA } from "./data";
 import GridTableDescription from "./description";
@@ -406,126 +405,158 @@ const columns: Column<Person>[] = [
   },
   {
     accessorKey: "bloodPressure",
-    header: () => (
-      <div className="grid grid-cols-[1fr_1px_1fr] grid-rows-[1fr_1px_1fr] place-items-center">
-        <div className="row-start-1 col-start-1 p-1">血圧上</div>
-        <div className="row-start-2 col-start-1 border-b border-gray-300 w-full h-full" />
-        <div className="row-start-3 col-start-1 p-1">血圧下</div>
-        <div className="row-start-1 row-span-3 col-start-2 border-r border-gray-300 w-full h-full" />
-        <div className="row-start-1 row-span-3 col-start-3 p-1">血圧平均</div>
-      </div>
-    ),
+    header: () => {
+      // 新しいComplexCellLayoutを使用してヘッダーを定義
+      const structure = {
+        rows: 2,
+        columns: 2,
+        dividerSize: 1,
+      };
+
+      const headerCells = [
+        { rowStart: 0, columnStart: 0, content: "血圧上", className: "p-1" },
+        { rowStart: 1, columnStart: 0, content: "血圧下", className: "p-1" },
+        {
+          rowStart: 0,
+          columnStart: 1,
+          rowSpan: 2,
+          content: "血圧平均",
+          className: "p-1",
+        },
+      ];
+
+      return (
+        <ComplexCellLayout
+          structure={structure}
+          cells={headerCells}
+          className="h-full w-full"
+        />
+      );
+    },
     cell: ({ value, onChange, onFocus, onKeyDown, onInitialize }) => {
       if (!isBloodPressure(value)) return null;
       const { systolic, diastolic, average } = value;
-      // 特殊な血圧パターン用にカスタムレイアウトを作成
 
-      // まず左側の縦2分割を作成
-      const leftCells = createCellSplit({
-        direction: "vertical",
-        count: 2,
-      }).map((cell) => ({
-        ...cell,
-        rightColumn: 0.5, // 左側部分のみを使用
-      }));
-
-      // 右側の全高セルを作成
-      const rightCell = {
-        topRow: 0,
-        leftColumn: 0.5,
-        bottomRow: 1,
-        rightColumn: 1,
+      // 基本的なセルレイアウト構造を定義
+      const structure = {
+        rows: 2,
+        columns: 2,
+        dividerSize: 1,
       };
 
-      // すべてのセルを結合
-      const cellLayouts = [...leftCells, rightCell];
+      // セルレイアウト定義
+      const cellLayouts = [
+        { topRow: 0, leftColumn: 0, bottomRow: 0.5, rightColumn: 0.5 },
+        { topRow: 0.5, leftColumn: 0, bottomRow: 1, rightColumn: 0.5 },
+        { topRow: 0, leftColumn: 0.5, bottomRow: 1, rightColumn: 1 },
+      ];
 
-      // 各セルに対応するfocus関数を格納する配列
-      const cells: { layout: CellLayout; focus: () => void }[] =
-        cellLayouts.map((layout) => ({
-          layout,
-          focus: () => {}, // 後で更新
-        }));
+      // フォーカス関数の格納場所
+      type RefHolder = { focus: () => void };
+      const focusRefs: Array<RefHolder | null> = [null, null, null];
 
       // すべてのセルのref設定が完了したかをトラッキングする
       const refsInitialized = [false, false, false];
       const checkAllRefsInitialized = () => {
         if (refsInitialized.every((initialized) => initialized)) {
           // すべてのrefが初期化されたらonInitialize呼び出し
-          onInitialize?.(
-            cells.map((cell) => ({
-              ...cell.layout,
-              focus: cell.focus,
-            })),
-          );
+          const cells = cellLayouts.map((layout, i) => ({
+            ...layout,
+            focus: () => focusRefs[i]?.focus(),
+          }));
+          onInitialize?.(cells);
         }
       };
 
+      // CellDefinition配列を作成（実際の入力要素）
+      const cellDefinitions = [
+        {
+          rowStart: 0,
+          columnStart: 0,
+          content: (
+            <NumberCell
+              ref={(ref) => {
+                if (!ref) return;
+                focusRefs[0] = { focus: () => ref.focus() };
+                refsInitialized[0] = true;
+                checkAllRefsInitialized();
+              }}
+              className="h-full w-full p-1"
+              value={systolic}
+              min={0}
+              max={300}
+              onChange={(newValue) => {
+                onChange?.({
+                  ...value,
+                  systolic: newValue,
+                });
+              }}
+              onFocus={() => onFocus?.(cellLayouts[0])}
+              onKeyDown={onKeyDown}
+            />
+          ),
+        },
+        {
+          rowStart: 1,
+          columnStart: 0,
+          content: (
+            <NumberCell
+              ref={(ref) => {
+                if (!ref) return;
+                focusRefs[1] = { focus: () => ref.focus() };
+                refsInitialized[1] = true;
+                checkAllRefsInitialized();
+              }}
+              className="h-full w-full p-1"
+              value={diastolic}
+              min={0}
+              max={200}
+              onChange={(newValue) => {
+                onChange?.({
+                  ...value,
+                  diastolic: newValue,
+                });
+              }}
+              onFocus={() => onFocus?.(cellLayouts[1])}
+              onKeyDown={onKeyDown}
+            />
+          ),
+        },
+        {
+          rowStart: 0,
+          columnStart: 1,
+          rowSpan: 2,
+          content: (
+            <NumberCell
+              ref={(ref) => {
+                if (!ref) return;
+                focusRefs[2] = { focus: () => ref.focus() };
+                refsInitialized[2] = true;
+                checkAllRefsInitialized();
+              }}
+              className="h-full w-full p-1"
+              value={average}
+              min={0}
+              max={200}
+              onChange={(newValue) => {
+                onChange?.({
+                  ...value,
+                  average: newValue,
+                });
+              }}
+              onFocus={() => onFocus?.(cellLayouts[2])}
+              onKeyDown={onKeyDown}
+            />
+          ),
+        },
+      ];
+
       return (
-        <div className="grid grid-cols-[1fr_1px_1fr] grid-rows-[1fr_1px_1fr] place-items-center">
-          <NumberCell
-            ref={(ref) => {
-              if (!ref) return;
-              cells[0].focus = () => ref.focus();
-              refsInitialized[0] = true;
-              checkAllRefsInitialized();
-            }}
-            className="row-start-1 col-start-1 p-1 h-full w-full"
-            value={systolic}
-            min={0}
-            max={300}
-            onChange={(newValue) => {
-              onChange?.({
-                ...value,
-                systolic: newValue,
-              });
-            }}
-            onFocus={() => onFocus?.(cells[0].layout)}
-            onKeyDown={onKeyDown}
-          />
-          <div className="row-start-2 col-start-1 border-b border-gray-300 w-full h-full" />
-          <NumberCell
-            ref={(ref) => {
-              if (!ref) return;
-              cells[1].focus = () => ref.focus();
-              refsInitialized[1] = true;
-              checkAllRefsInitialized();
-            }}
-            className="row-start-3 col-start-1 p-1 h-full w-full"
-            value={diastolic}
-            min={0}
-            max={200}
-            onChange={(newValue) => {
-              onChange?.({
-                ...value,
-                diastolic: newValue,
-              });
-            }}
-            onFocus={() => onFocus?.(cells[1].layout)}
-            onKeyDown={onKeyDown}
-          />
-          <div className="row-start-1 row-span-3 col-start-2 border-r border-gray-300 w-full h-full" />
-          <NumberCell
-            ref={(ref) => {
-              if (!ref) return;
-              cells[2].focus = () => ref.focus();
-              refsInitialized[2] = true;
-              checkAllRefsInitialized();
-            }}
-            className="row-start-1 row-span-3 col-start-3 p-1 h-full w-full"
-            value={average}
-            min={0}
-            max={200}
-            onChange={(newValue) => {
-              onChange?.({
-                ...value,
-                average: newValue,
-              });
-            }}
-            onFocus={() => onFocus?.(cells[2].layout)}
-            onKeyDown={onKeyDown}
-          />
-        </div>
+        <ComplexCellLayout
+          structure={structure}
+          cells={cellDefinitions}
+          className="h-full w-full"
+        />
       );
     },
   },
