@@ -130,34 +130,35 @@ const GridTable = <T extends RowData>({
         return false;
       }
 
+      const tolerance = 0.001;
       let isMatch = false;
 
       switch (direction) {
         case "up":
           // 上に移動: 現在のセル上端がターゲットセルの下端と一致/近接し、列が重なっていること
           isMatch =
-            Math.abs(currentCell.topRow - cell.bottomRow) < 0.001 && // 浮動小数点誤差を許容
+            Math.abs(currentCell.topRow - cell.bottomRow) < tolerance && // 浮動小数点誤差を許容
             currentMiddleColumn >= cell.leftColumn &&
             currentMiddleColumn < cell.rightColumn;
           break;
         case "down":
           // 下に移動: 現在のセル下端がターゲットセルの上端と一致/近接し、列が重なっていること
           isMatch =
-            Math.abs(currentCell.bottomRow - cell.topRow) < 0.001 && // 浮動小数点誤差を許容
+            Math.abs(currentCell.bottomRow - cell.topRow) < tolerance && // 浮動小数点誤差を許容
             currentMiddleColumn >= cell.leftColumn &&
             currentMiddleColumn < cell.rightColumn;
           break;
         case "left":
           // 左に移動: 現在のセル左端がターゲットセルの右端と一致/近接し、行が重なっていること
           isMatch =
-            Math.abs(currentCell.leftColumn - cell.rightColumn) < 0.001 && // 浮動小数点誤差を許容
+            Math.abs(currentCell.leftColumn - cell.rightColumn) < tolerance && // 浮動小数点誤差を許容
             currentMiddleRow > cell.topRow &&
             currentMiddleRow <= cell.bottomRow;
           break;
         case "right":
           // 右に移動: 現在のセル右端がターゲットセルの左端と一致/近接し、行が重なっていること
           isMatch =
-            Math.abs(currentCell.rightColumn - cell.leftColumn) < 0.001 && // 浮動小数点誤差を許容
+            Math.abs(currentCell.rightColumn - cell.leftColumn) < tolerance && // 浮動小数点誤差を許容
             currentMiddleRow > cell.topRow &&
             currentMiddleRow <= cell.bottomRow;
           break;
